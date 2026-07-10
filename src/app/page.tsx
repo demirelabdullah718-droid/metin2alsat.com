@@ -224,6 +224,32 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    const serverParam = params.get("server");
+    const categoryParam = params.get("category");
+
+    if (serverParam) {
+      const matchedServer = servers.find(
+        (item) => normalizeText(item) === normalizeText(serverParam)
+      );
+
+      if (matchedServer) {
+        setSelectedServer(matchedServer);
+      }
+    }
+
+    if (categoryParam) {
+      const matchedCategory = categories.find(
+        (item) => normalizeText(item) === normalizeText(categoryParam)
+      );
+
+      if (matchedCategory) {
+        setSelectedCategory(matchedCategory);
+      }
+    }
+  }, []);
   async function handleLogout() {
     await supabase.auth.signOut();
     localStorage.removeItem("metin2alsat_user_email");
@@ -378,6 +404,49 @@ export default function Home() {
     return textHasAlias(text, [term, ...aliases]);
   }
 
+  function selectServer(serverName: string) {
+    setSelectedServer(serverName);
+
+    const params = new URLSearchParams(window.location.search);
+
+    if (serverName === "Tumu") {
+      params.delete("server");
+    } else {
+      params.set("server", serverName);
+    }
+
+    const newUrl = params.toString() ? `/?${params.toString()}` : "/";
+    window.history.pushState({}, "", newUrl);
+
+    setTimeout(() => {
+      document.getElementById("ilanlar")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 50);
+  }
+
+  function selectCategory(categoryName: string) {
+    setSelectedCategory(categoryName);
+
+    const params = new URLSearchParams(window.location.search);
+
+    if (categoryName === "Tumu") {
+      params.delete("category");
+    } else {
+      params.set("category", categoryName);
+    }
+
+    const newUrl = params.toString() ? `/?${params.toString()}` : "/";
+    window.history.pushState({}, "", newUrl);
+
+    setTimeout(() => {
+      document.getElementById("ilanlar")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 50);
+  }
   function categoryIcon(category: string) {
     if (normalizeText(category) === "karakter") return "K";
     if (normalizeText(category) === "yang") return "Y";
@@ -802,7 +871,7 @@ export default function Home() {
           {servers.map((serverName) => (
             <button
               key={serverName}
-              onClick={() => setSelectedServer(serverName)}
+              onClick={() => selectServer(serverName)}
               className={`rounded-2xl p-4 font-bold border ${
                 selectedServer === serverName
                   ? "bg-yellow-400 text-black border-yellow-400"
@@ -824,7 +893,7 @@ export default function Home() {
           {categories.map((cat) => (
             <button
               key={cat}
-              onClick={() => setSelectedCategory(cat)}
+              onClick={() => selectCategory(cat)}
               className={`rounded-2xl p-5 text-center font-bold border ${
                 selectedCategory === cat
                   ? "bg-yellow-400 text-black border-yellow-400"
@@ -837,7 +906,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="px-8 pb-16">
+      <section id="ilanlar" className="px-8 pb-16">
         <h2 className="text-2xl font-bold mb-6">
           Son Eklenen Ilanlar
         </h2>
