@@ -415,7 +415,9 @@ export default function Home() {
       params.set("server", serverName);
     }
 
-    const newUrl = params.toString() ? `/?${params.toString()}` : "/";
+    const query = params.toString();
+    const newUrl = query ? `/?${query}#ilanlar` : "/#ilanlar";
+
     window.history.pushState({}, "", newUrl);
 
     setTimeout(() => {
@@ -437,7 +439,9 @@ export default function Home() {
       params.set("category", categoryName);
     }
 
-    const newUrl = params.toString() ? `/?${params.toString()}` : "/";
+    const query = params.toString();
+    const newUrl = query ? `/?${query}#ilanlar` : "/#ilanlar";
+
     window.history.pushState({}, "", newUrl);
 
     setTimeout(() => {
