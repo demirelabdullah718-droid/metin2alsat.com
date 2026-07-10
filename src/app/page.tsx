@@ -33,6 +33,8 @@ type WonRate = {
   updated_at: string;
 };
 
+type WonIntent = "sell_to_site" | "buy_from_site" | "won_general" | null;
+
 const adminWhatsApp = "905076680724";
 
 const servers = [
@@ -74,6 +76,71 @@ const categories = [
   "Klavye",
   "Mouse",
   "Kulaklik",
+];
+
+const serverAliases: Record<string, string[]> = {
+  Marmara: ["marmara", "mrmra", "marmra", "marma", "mrm"],
+  Ezel: ["ezel", "ezl"],
+  Bagjanamu: ["bagjanamu", "bagja", "bagjan", "bgnm", "bagjnm"],
+  Lucifer: ["lucifer", "luci", "lucifr", "lcf", "lusifer", "lucy"],
+  Charon: ["charon", "kharon", "chrn", "crn", "caron", "char", "khrn"],
+  Safir: ["safir", "sfr"],
+  Star: ["star", "str"],
+  Arkadaslar: ["arkadaslar", "arkadas", "ark", "arkdslr"],
+};
+
+const smartTermAliases: Record<string, string[]> = {
+  karakter: ["karakter", "karaktr", "char", "character"],
+  hesap: ["hesap", "account", "acc"],
+  sura: ["sura", "sr", "sra"],
+  savasci: ["savasci", "savas", "war", "warrior", "svsc"],
+  saman: ["saman", "shaman", "smn"],
+  ninja: ["ninja", "nj", "ninj"],
+  lycan: ["lycan", "kurt", "lycn", "lyk"],
+  bedensel: ["bedensel", "beden", "bdn", "bdnsl", "body"],
+  zihinsel: ["zihinsel", "zihin", "mental", "zhns", "zhinsel"],
+  keskinlik: ["keskinlik", "keskin", "kskn", "ksknlk", "buyulu silah", "buyulu", "silahci"],
+  karabuyu: ["karabuyu", "kara buyu", "kara", "kb", "black"],
+  okcu: ["okcu", "okcu ninja", "archer", "okninja"],
+  bicakci: ["bicakci", "bicak", "bcak", "dagger"],
+  sifaci: ["sifaci", "sifa", "iyilestirme", "heal", "healer"],
+  kritikci: ["kritikci", "kritik", "ejderha", "ejderha gucu", "dragon"],
+  yakut: ["yakut", "rubi", "ruby"],
+  elmas: ["elmas", "diamond"],
+  yesim: ["yesim", "jade"],
+  safir: ["safir", "sapphire"],
+  oniks: ["oniks", "onyx"],
+  ametist: ["ametist", "amethyst"],
+  grena: ["grena", "granat", "garnet"],
+  kusursuz: ["kusursuz", "kusursz", "ksrsz"],
+  mukemmel: ["mukemmel", "mukemel", "mkml"],
+  tertemiz: ["tertemiz", "trtmz"],
+  parlak: ["parlak", "prlk"],
+  mat: ["mat"],
+};
+
+const stopWords = [
+  "istiyorum",
+  "istiyom",
+  "istiyrm",
+  "ariyorum",
+  "ariyom",
+  "aryrm",
+  "lazim",
+  "lzm",
+  "var",
+  "mi",
+  "icin",
+  "bana",
+  "bir",
+  "adet",
+  "site",
+  "sitede",
+  "goster",
+  "gosterebilir",
+  "olur",
+  "acil",
+  "lazm",
 ];
 
 export default function Home() {
@@ -175,6 +242,142 @@ export default function Home() {
       .trim();
   }
 
+  function textHasAlias(text: string, aliases: string[]) {
+    const cleanText = normalizeText(text);
+    const words = cleanText.split(" ");
+
+    return aliases.some((alias) => {
+      const cleanAlias = normalizeText(alias);
+
+      if (!cleanAlias) return false;
+
+      if (cleanAlias.includes(" ")) {
+        return cleanText.includes(cleanAlias);
+      }
+
+      return (
+        words.includes(cleanAlias) ||
+        (cleanAlias.length >= 4 && cleanText.includes(cleanAlias))
+      );
+    });
+  }
+
+  function detectServer(query: string) {
+    const cleanQuery = normalizeText(query);
+
+    for (const [serverName, aliases] of Object.entries(serverAliases)) {
+      if (textHasAlias(cleanQuery, aliases)) {
+        return serverName;
+      }
+    }
+
+    return null;
+  }
+
+  function detectWonIntent(query: string): WonIntent {
+    const cleanQuery = normalizeText(query);
+
+    const hasWon = textHasAlias(cleanQuery, ["won", "w0n", "von"]);
+
+    if (!hasWon) return null;
+
+    const sellWords = [
+      "satmak",
+      "satcam",
+      "saticam",
+      "satacagim",
+      "satacam",
+      "satiyorum",
+      "satarim",
+      "satayim",
+      "bozdurmak",
+      "bozdur",
+      "siteye sat",
+      "adminlere sat",
+      "won satmak",
+      "won satcam",
+      "won saticam",
+    ];
+
+    const buyWords = [
+      "almak",
+      "alcam",
+      "alicam",
+      "alacagim",
+      "alacam",
+      "alirim",
+      "alayim",
+      "lazim",
+      "lzm",
+      "ariyorum",
+      "ariyom",
+      "satilik",
+      "satin al",
+      "won almak",
+      "won alcam",
+      "won lazim",
+    ];
+
+    if (textHasAlias(cleanQuery, sellWords)) {
+      return "sell_to_site";
+    }
+
+    if (textHasAlias(cleanQuery, buyWords)) {
+      return "buy_from_site";
+    }
+
+    return "won_general";
+  }
+
+  function getRequestedTerms(query: string) {
+    const cleanQuery = normalizeText(query);
+
+    return Object.entries(smartTermAliases)
+      .filter(([, aliases]) => textHasAlias(cleanQuery, aliases))
+      .map(([canonical]) => canonical);
+  }
+
+  function detectCharacterSearch(query: string) {
+    const terms = getRequestedTerms(query);
+
+    const characterTerms = [
+      "karakter",
+      "hesap",
+      "sura",
+      "savasci",
+      "saman",
+      "ninja",
+      "lycan",
+      "bedensel",
+      "zihinsel",
+      "keskinlik",
+      "karabuyu",
+      "okcu",
+      "bicakci",
+      "sifaci",
+      "kritikci",
+      "yakut",
+      "elmas",
+      "yesim",
+      "safir",
+      "oniks",
+      "ametist",
+      "grena",
+      "kusursuz",
+      "mukemmel",
+      "tertemiz",
+      "parlak",
+      "mat",
+    ];
+
+    return terms.some((term) => characterTerms.includes(term));
+  }
+
+  function textHasSmartTerm(text: string, term: string) {
+    const aliases = smartTermAliases[term] || [term];
+    return textHasAlias(text, [term, ...aliases]);
+  }
+
   function categoryIcon(category: string) {
     if (normalizeText(category) === "karakter") return "K";
     if (normalizeText(category) === "yang") return "Y";
@@ -196,64 +399,6 @@ export default function Home() {
         JSON.stringify(item.character_details || {}),
       ].join(" ")
     );
-  }
-
-  function detectServer(query: string) {
-    return realServers.find((server) =>
-      query.includes(normalizeText(server))
-    );
-  }
-
-  function detectWonIntent(query: string) {
-    const hasWon = query.includes("won");
-
-    if (!hasWon) return null;
-
-    const wantsToSell =
-      query.includes("satmak") ||
-      query.includes("satacam") ||
-      query.includes("satacagim") ||
-      query.includes("saticam") ||
-      query.includes("satayim") ||
-      query.includes("siteye sat") ||
-      query.includes("won satmak");
-
-    const wantsToBuy =
-      query.includes("almak") ||
-      query.includes("alicam") ||
-      query.includes("alacagim") ||
-      query.includes("lazim") ||
-      query.includes("ariyorum") ||
-      query.includes("satilik") ||
-      query.includes("won almak");
-
-    if (wantsToSell) return "sell_to_site";
-    if (wantsToBuy) return "buy_from_site";
-
-    return "won_general";
-  }
-
-  function detectCharacterSearch(query: string) {
-    const characterWords = [
-      "sura",
-      "savasci",
-      "saman",
-      "ninja",
-      "lycan",
-      "kurt",
-      "bedensel",
-      "zihinsel",
-      "keskinlik",
-      "buyulu",
-      "karabuyu",
-      "okcu",
-      "bicakci",
-      "sifaci",
-      "kritikci",
-      "ejderha",
-    ];
-
-    return characterWords.some((word) => query.includes(word));
   }
 
   function runSmartAssistant() {
@@ -300,6 +445,10 @@ export default function Home() {
         return itemCategory === "won sat" || itemCategory === "won al";
       });
     } else if (isCharacterSearch) {
+      const requestedTerms = getRequestedTerms(query).filter(
+        (term) => term !== "karakter" && term !== "hesap"
+      );
+
       foundListings = listings.filter((item) => {
         const text = listingSearchText(item);
         const itemServer = normalizeText(item.server);
@@ -313,60 +462,13 @@ export default function Home() {
           return false;
         }
 
-        const importantWords = [
-          "sura",
-          "savasci",
-          "saman",
-          "ninja",
-          "lycan",
-          "kurt",
-          "bedensel",
-          "zihinsel",
-          "keskinlik",
-          "buyulu",
-          "karabuyu",
-          "okcu",
-          "bicakci",
-          "sifaci",
-          "kritikci",
-          "ejderha",
-          "kusursuz",
-          "mukemmel",
-          "yakut",
-          "elmas",
-          "yesim",
-          "safir",
-          "oniks",
-          "ametist",
-          "grena",
-        ];
-
-        const requestedWords = importantWords.filter((word) =>
-          query.includes(word)
-        );
-
-        if (requestedWords.length === 0) {
+        if (requestedTerms.length === 0) {
           return true;
         }
 
-        return requestedWords.every((word) => text.includes(word));
+        return requestedTerms.every((term) => textHasSmartTerm(text, term));
       });
     } else {
-      const stopWords = [
-        "istiyorum",
-        "ariyorum",
-        "lazim",
-        "var",
-        "mi",
-        "icin",
-        "bana",
-        "bir",
-        "adet",
-        "site",
-        "sitede",
-        "goster",
-      ];
-
       const words = query
         .split(" ")
         .filter((word) => word.length > 2 && !stopWords.includes(word));
@@ -544,7 +646,7 @@ export default function Home() {
                 if (e.key === "Enter") runSmartAssistant();
               }}
               className="flex-1 rounded-2xl px-5 py-4 bg-white text-black placeholder:text-gray-500"
-              placeholder="Ornek: Charon won almak istiyorum, Lucifer keskinlik sura ariyorum..."
+              placeholder="Ornek: kharon won alcam, chrn won satcam, luci ksknlk sura..."
             />
 
             <button
