@@ -15,7 +15,7 @@ type Listing = {
 };
 
 const servers = [
-  "Tümü",
+  "Tumu",
   "Marmara",
   "Ezel",
   "Bagjanamu",
@@ -23,18 +23,25 @@ const servers = [
   "Charon",
   "Safir",
   "Star",
-  "Arkadaşlar",
+  "Arkadaslar",
 ];
 
 const categories = [
-  "Tümü",
+  "Tumu",
   "Karakter",
   "Yang",
   "Won Al",
   "Won Sat",
-  "Eşya",
+  "Esya",
   "EP",
   "Hesap",
+  "Oyuncu Koltugu",
+  "Oyuncu Bilgisayari",
+  "Monitor",
+  "Ekran Karti",
+  "Klavye",
+  "Mouse",
+  "Kulaklik",
 ];
 
 export default function Home() {
@@ -42,8 +49,8 @@ export default function Home() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [selectedServer, setSelectedServer] = useState("Tümü");
-  const [selectedCategory, setSelectedCategory] = useState("Tümü");
+  const [selectedServer, setSelectedServer] = useState("Tumu");
+  const [selectedCategory, setSelectedCategory] = useState("Tumu");
 
   useEffect(() => {
     async function getUser() {
@@ -66,7 +73,7 @@ export default function Home() {
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.log("İlanlar çekilirken hata:", error.message);
+        console.log("Ilanlar cekilirken hata:", error.message);
         setLoading(false);
         return;
       }
@@ -102,22 +109,41 @@ export default function Home() {
   }
 
   function categoryIcon(category: string) {
-    if (category === "Karakter") return "🛡️";
-    if (category === "Yang") return "💰";
-    if (category === "Won Al") return "🛒";
-    if (category === "Won Sat") return "💎";
-    if (category === "Eşya") return "⚔️";
-    if (category === "EP") return "⚡";
-    if (category === "Hesap") return "📦";
-    return "🎮";
+    if (category === "Karakter") return "K";
+    if (category === "Yang") return "Y";
+    if (category === "Won Al") return "WA";
+    if (category === "Won Sat") return "WS";
+    if (category === "Esya" || category === "Eşya") return "E";
+    if (category === "EP") return "EP";
+    if (category === "Hesap") return "H";
+    return "O";
+  }
+
+  function normalizeText(text: string) {
+    return text
+      .replaceAll("ü", "u")
+      .replaceAll("Ü", "U")
+      .replaceAll("ö", "o")
+      .replaceAll("Ö", "O")
+      .replaceAll("ı", "i")
+      .replaceAll("İ", "I")
+      .replaceAll("ğ", "g")
+      .replaceAll("Ğ", "G")
+      .replaceAll("ş", "s")
+      .replaceAll("Ş", "S")
+      .replaceAll("ç", "c")
+      .replaceAll("Ç", "C");
   }
 
   const filteredListings = listings.filter((item) => {
+    const itemServer = normalizeText(item.server);
+    const itemCategory = normalizeText(item.category);
+
     const serverMatch =
-      selectedServer === "Tümü" || item.server === selectedServer;
+      selectedServer === "Tumu" || itemServer === selectedServer;
 
     const categoryMatch =
-      selectedCategory === "Tümü" || item.category === selectedCategory;
+      selectedCategory === "Tumu" || itemCategory === selectedCategory;
 
     return serverMatch && categoryMatch;
   });
@@ -129,15 +155,22 @@ export default function Home() {
           onClick={() => (window.location.href = "/")}
           className="text-3xl font-bold text-yellow-400"
         >
-          🎮 Metin2AlSat
+          Metin2AlSat
         </button>
 
         <div className="flex items-center gap-3">
           <a
+            href="/won"
+            className="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2 rounded-xl font-bold"
+          >
+            Resmi Won Al / Sat
+          </a>
+
+          <a
             href="/ticaret-nasil-yapilir"
             className="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2 rounded-xl font-bold"
           >
-            Ticaret Nasıl Yapılır?
+            Ticaret Nasil Yapilir?
           </a>
 
           {userEmail ? (
@@ -148,7 +181,7 @@ export default function Home() {
                 onClick={handleLogout}
                 className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-xl font-bold"
               >
-                Çıkış Yap
+                Cikis Yap
               </button>
             </>
           ) : (
@@ -157,14 +190,14 @@ export default function Home() {
                 onClick={() => (window.location.href = "/login")}
                 className="bg-yellow-400 hover:bg-yellow-500 text-black px-5 py-2 rounded-xl font-bold"
               >
-                Giriş Yap
+                Giris Yap
               </button>
 
               <button
                 onClick={() => (window.location.href = "/register")}
                 className="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2 rounded-xl font-bold"
               >
-                Kayıt Ol
+                Kayit Ol
               </button>
             </>
           )}
@@ -173,29 +206,29 @@ export default function Home() {
             onClick={() => (window.location.href = "/ilan-ver")}
             className="bg-emerald-500 hover:bg-emerald-600 px-5 py-2 rounded-xl font-bold"
           >
-            İlan Ver
+            Ilan Ver
           </button>
         </div>
       </header>
 
       <section className="px-8 py-16 text-center">
         <h1 className="text-5xl font-extrabold mb-4">
-          Metin2 Alım Satım Pazarı
+          Metin2 Alim Satim Pazari
         </h1>
 
         <p className="text-slate-300 mb-8">
-          Sunucunu seç, kategorini seç, güvenli şekilde satıcıyla iletişime geç.
+          Sunucunu sec, kategorini sec, saticiyla WhatsApp uzerinden iletisime gec.
         </p>
 
         <input
           className="w-full max-w-3xl rounded-2xl px-5 py-4 bg-white text-black placeholder:text-gray-500"
-          placeholder="İlan ara: karakter, won, eşya..."
+          placeholder="Ilan ara: karakter, won, esya..."
         />
       </section>
 
       <section className="px-8 mb-8">
         <h2 className="text-xl font-bold mb-4 text-yellow-400">
-          1. Sunucu Seç
+          1. Sunucu Sec
         </h2>
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -217,7 +250,7 @@ export default function Home() {
 
       <section className="px-8 mb-12">
         <h2 className="text-xl font-bold mb-4 text-yellow-400">
-          2. Kategori Seç
+          2. Kategori Sec
         </h2>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -231,7 +264,7 @@ export default function Home() {
                   : "bg-slate-900 border-slate-800 hover:border-yellow-400"
               }`}
             >
-              {cat === "Tümü" ? "🎮 Tümü" : `${categoryIcon(cat)} ${cat}`}
+              {cat === "Tumu" ? "Tumu" : `${categoryIcon(cat)} ${cat}`}
             </button>
           ))}
         </div>
@@ -239,22 +272,22 @@ export default function Home() {
 
       <section className="px-8 pb-16">
         <h2 className="text-2xl font-bold mb-6">
-          🔥 Son Eklenen İlanlar
+          Son Eklenen Ilanlar
         </h2>
 
-        {loading && <p className="text-slate-400">İlanlar yükleniyor...</p>}
+        {loading && <p className="text-slate-400">Ilanlar yukleniyor...</p>}
 
         {!loading && filteredListings.length === 0 && (
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center">
             <p className="text-slate-300 mb-4">
-              Bu filtreye uygun ilan bulunamadı.
+              Bu filtreye uygun ilan bulunamadi.
             </p>
 
             <button
               onClick={() => (window.location.href = "/ilan-ver")}
               className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 rounded-xl font-bold"
             >
-              İlk İlanı Sen Ver
+              Ilk Ilani Sen Ver
             </button>
           </div>
         )}
@@ -280,11 +313,11 @@ export default function Home() {
               <div className="p-6">
                 <div className="flex items-center justify-between gap-2">
                   <div className="text-sm text-yellow-400 font-bold">
-                    {item.category}
+                    {normalizeText(item.category)}
                   </div>
 
                   <div className="text-xs bg-slate-800 px-3 py-1 rounded-full text-slate-300">
-                    {item.server}
+                    {normalizeText(item.server)}
                   </div>
                 </div>
 
@@ -304,7 +337,7 @@ export default function Home() {
                   onClick={() => (window.location.href = `/ilan/${item.id}`)}
                   className="w-full mt-5 bg-yellow-400 hover:bg-yellow-500 text-black py-3 rounded-xl font-bold"
                 >
-                  İlanı İncele
+                  Ilani Incele
                 </button>
               </div>
             </div>
@@ -313,7 +346,7 @@ export default function Home() {
       </section>
 
       <footer className="border-t border-slate-800 text-center text-slate-400 py-8">
-        © 2026 Metin2AlSat.com
+        2026 Metin2AlSat.com
       </footer>
     </main>
   );

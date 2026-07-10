@@ -1,19 +1,19 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { supabase } from "../../lib/supabase";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
 
-    setMessage("Giriş yapılıyor...");
+    setMessage("Kayit olusturuluyor...");
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
     });
@@ -23,61 +23,94 @@ export default function LoginPage() {
       return;
     }
 
-    if (data.user?.email) {
-      localStorage.setItem("metin2alsat_user_email", data.user.email);
+    setMessage("Kayit basarili. E-postani kontrol et veya giris yap.");
+  }
+
+  async function signInWithGoogle() {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin + "/",
+      },
+    });
+
+    if (error) {
+      setMessage("Google kayit hatasi: " + error.message);
     }
-
-    setMessage("Giriş başarılı! Ana sayfaya yönlendiriliyorsun...");
-
-    setTimeout(() => {
-      window.location.href = "/";
-    }, 700);
   }
 
   return (
     <main className="min-h-screen bg-slate-950 text-white flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8">
         <h1 className="text-3xl font-bold text-yellow-400 mb-2">
-          Metin2AlSat
+          Kayit Ol
         </h1>
 
-        <p className="text-slate-400 mb-6">Hesabına giriş yap</p>
+        <p className="text-slate-400 mb-6">
+          Yeni hesap olustur.
+        </p>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <input
-            type="email"
-            placeholder="E-posta adresin"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl px-4 py-3 bg-white text-black placeholder:text-gray-500"
-            required
-          />
+        <button
+          type="button"
+          onClick={signInWithGoogle}
+          className="w-full bg-white hover:bg-slate-200 text-black py-3 rounded-xl font-bold mb-5"
+        >
+          Google ile Kayit Ol
+        </button>
 
-          <input
-            type="password"
-            placeholder="Şifre"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl px-4 py-3 bg-white text-black placeholder:text-gray-500"
-            required
-          />
+        <div className="flex items-center gap-3 mb-5">
+          <div className="h-px bg-slate-700 flex-1" />
+          <span className="text-slate-500 text-sm">veya</span>
+          <div className="h-px bg-slate-700 flex-1" />
+        </div>
+
+        <form onSubmit={handleRegister} className="space-y-5">
+          <div>
+            <label className="block mb-2 text-sm text-slate-300">
+              E-posta
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-xl px-4 py-3 bg-white text-black"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block mb-2 text-sm text-slate-300">
+              Sifre
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-xl px-4 py-3 bg-white text-black"
+              required
+            />
+          </div>
 
           <button
             type="submit"
             className="w-full bg-yellow-400 hover:bg-yellow-500 text-black py-3 rounded-xl font-bold"
           >
-            Giriş Yap
+            Kayit Ol
           </button>
         </form>
 
-        <p className="mt-5 text-sm text-slate-400">
-          Hesabın yok mu?{" "}
-          <a href="/register" className="text-yellow-400 font-bold">
-            Kayıt Ol
+        {message && <p className="mt-5 text-sm text-slate-300">{message}</p>}
+
+        <p className="text-slate-400 text-sm mt-6">
+          Zaten hesabin var mi?{" "}
+          <a href="/login" className="text-yellow-400 font-bold">
+            Giris yap
           </a>
         </p>
 
-        {message && <p className="mt-5 text-sm text-slate-300">{message}</p>}
+        <a href="/" className="block text-yellow-400 font-bold mt-5">
+          Ana sayfaya don
+        </a>
       </div>
     </main>
   );
