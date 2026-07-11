@@ -233,16 +233,6 @@ export default function CreateListingPage() {
     });
   }
 
-  function toggleMarketExtra(extra: string) {
-    setSelectedMarketExtras((prev) => {
-      if (prev.includes(extra)) {
-        return prev.filter((item) => item !== extra);
-      }
-
-      return [...prev, extra];
-    });
-  }
-
   function addSubCharacter() {
     if (subCharacters.length >= 5) {
       setMessage("En fazla 5 alt karakter ekleyebilirsin.");
