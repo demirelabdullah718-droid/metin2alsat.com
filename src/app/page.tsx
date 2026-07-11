@@ -119,6 +119,14 @@ const smartTermAliases: Record<string, string[]> = {
   mat: ["mat"],
 };
 
+
+const scrollingTexts = [
+  "BU SITE SADECE METIN2 TR OYUNCULARINA HIZMET VERMEKTEDIR",
+  "RESMI WON ALIM SATIM ICIN METIN2ALSAT EKIBIYLE ILETISIME GECIN",
+  "SUPHELI ILANLARI ADMINLERE BILDIRIN",
+  "GUVENLI TICARET ICIN WHATSAPP DESTEGI KULLANIN",
+  "ILANLARI INCELEMEDEN ODEME YAPMAYIN",
+];
 const stopWords = [
   "istiyorum",
   "istiyom",
@@ -640,6 +648,25 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
+      <style>{`
+        @keyframes metin2alsat-marquee {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+
+        .metin2alsat-marquee {
+          animation: metin2alsat-marquee 28s linear infinite;
+        }
+
+        .metin2alsat-marquee:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
+
       <header className="flex items-center justify-between px-8 py-5 border-b border-slate-800">
         <button
           onClick={() => (window.location.href = "/")}
@@ -701,6 +728,23 @@ export default function Home() {
         </div>
       </header>
 
+      <section className="px-8 pt-6">
+        <div className="overflow-hidden rounded-2xl border border-yellow-500/30 bg-slate-900">
+          <div className="flex w-max metin2alsat-marquee">
+            {[...scrollingTexts, ...scrollingTexts].map((text, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-4 px-8 py-3 text-yellow-400 font-bold tracking-wide whitespace-nowrap"
+              >
+                <span className="text-emerald-400">METIN2ALSAT</span>
+                <span>{text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Kayar Bilgi Alani */}
       <section className="px-8 py-16 text-center">
         <h1 className="text-5xl font-extrabold mb-4">
           Metin2 Alim Satim Pazari
