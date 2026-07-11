@@ -182,7 +182,7 @@ export default function CreateListingPage() {
     Oniks: [],
   });
 
-  const [selectedMarketExtras, setSelectedMarketExtras] = useState<string[]>([]);
+  const [marketExtraNote, setMarketExtraNote] = useState("");
   const [subCharacters, setSubCharacters] = useState<SubCharacter[]>([]);
 
   const [message, setMessage] = useState("");
@@ -406,7 +406,7 @@ export default function CreateListingPage() {
             biolog,
             alchemy,
             alchemyBonuses,
-            marketExtras: selectedMarketExtras,
+            marketExtras: marketExtraNote.trim() ? [marketExtraNote.trim()] : [],
             subCharacters: cleanSubCharacters,
           }
         : {};
@@ -707,25 +707,15 @@ export default function CreateListingPage() {
 
               <div className="mt-8">
                 <h3 className="text-lg font-bold text-yellow-400 mb-4">
-                  Market Ozellikleri
+                  Nesne Market Ozellikleri
                 </h3>
 
-                <div className="flex flex-wrap gap-2">
-                  {marketExtras.map((extra) => (
-                    <button
-                      key={extra}
-                      type="button"
-                      onClick={() => toggleMarketExtra(extra)}
-                      className={`px-3 py-2 rounded-xl text-sm font-bold border ${
-                        selectedMarketExtras.includes(extra)
-                          ? "bg-yellow-400 text-black border-yellow-400"
-                          : "bg-slate-950 text-white border-slate-700"
-                      }`}
-                    >
-                      {extra}
-                    </button>
-                  ))}
-                </div>
+                <textarea
+                  value={marketExtraNote}
+                  onChange={(e) => setMarketExtraNote(e.target.value)}
+                  className="w-full min-h-28 rounded-xl px-4 py-3 bg-white text-black"
+                  placeholder="Nazar tilsimi, site markasi, EP bakiyeniz vb urunleriniz varsa buraya yaziniz."
+                />
               </div>
             </section>
           )}
