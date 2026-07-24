@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
@@ -56,7 +56,7 @@ export default function WonPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white px-4 py-10">
+    <main className="min-h-screen bg-transparent text-white px-4 py-10">
       <div className="mx-auto max-w-6xl">
         <a href="/" className="text-yellow-400 font-bold">
           ← Ana sayfaya dön

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -151,14 +151,14 @@ export default function IlanDuzenlePage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+      <main className="min-h-screen bg-transparent text-white flex items-center justify-center">
         <p className="text-slate-300">İlan yükleniyor...</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white px-4 py-10">
+    <main className="min-h-screen bg-transparent text-white px-4 py-10">
       <div className="mx-auto max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl p-8">
         <div className="flex items-center justify-between mb-8">
           <div>

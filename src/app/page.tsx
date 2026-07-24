@@ -2,6 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+import LandingHeader from "../components/LandingHeader";
+import WhyMetin2AlSat from "../components/WhyMetin2AlSat";
+import TradeGuide from "../components/TradeGuide";
+import OfficialContact from "../components/OfficialContact";
+import CategoryGroups from "../components/CategoryGroups";
 
 type CharacterDetails = {
   class?: string;
@@ -63,16 +68,21 @@ const realServers = [
 const categories = [
   "Tumu",
   "Karakter",
+  "Hesap",
   "Yang",
   "Won Al",
   "Won Sat",
   "Esya",
   "EP",
-  "Hesap",
-  "Oyuncu Koltugu",
   "Oyuncu Bilgisayari",
+  "Oyuncu Koltugu",
   "Monitor",
   "Ekran Karti",
+  "Islemci",
+  "Anakart",
+  "RAM",
+  "SSD",
+  "PSU",
   "Klavye",
   "Mouse",
   "Kulaklik",
@@ -647,7 +657,7 @@ export default function Home() {
   });
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
+    <main className="min-h-screen bg-transparent text-white">
       <style>{`
         @keyframes metin2alsat-marquee {
           0% {
@@ -667,94 +677,12 @@ export default function Home() {
         }
       `}</style>
 
-      <header className="flex items-center justify-between px-8 py-5 border-b border-slate-800">
-        <button
-          onClick={() => (window.location.href = "/")}
-          className="text-3xl font-bold text-yellow-400"
-        >
-          Metin2AlSat
-        </button>
-
-        <div className="flex items-center gap-3">
-          <a
-            href="/won"
-            className="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2 rounded-xl font-bold"
-          >
-            Resmi Won Al / Sat
-          </a>
-
-          <a
-            href="/ticaret-nasil-yapilir"
-            className="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2 rounded-xl font-bold"
-          >
-            Ticaret Nasil Yapilir?
-          </a>
-
-          {userEmail ? (
-            <>
-              <span className="text-sm text-slate-300">{userEmail}</span>
-
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-xl font-bold"
-              >
-                Cikis Yap
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => (window.location.href = "/login")}
-                className="bg-yellow-400 hover:bg-yellow-500 text-black px-5 py-2 rounded-xl font-bold"
-              >
-                Giris Yap
-              </button>
-
-              <button
-                onClick={() => (window.location.href = "/register")}
-                className="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2 rounded-xl font-bold"
-              >
-                Kayit Ol
-              </button>
-            </>
-          )}
-
-          <button
-            onClick={() => (window.location.href = "/ilan-ver")}
-            className="bg-emerald-500 hover:bg-emerald-600 px-5 py-2 rounded-xl font-bold"
-          >
-            Ilan Ver
-          </button>
-        </div>
-      </header>
-
-      <section className="px-8 pt-6">
-        <div className="overflow-hidden rounded-2xl border border-yellow-500/30 bg-slate-900">
-          <div className="flex w-max metin2alsat-marquee">
-            {[...scrollingTexts, ...scrollingTexts].map((text, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-4 px-8 py-3 text-yellow-400 font-bold tracking-wide whitespace-nowrap"
-              >
-                <span className="text-emerald-400">METIN2ALSAT</span>
-                <span>{text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Kayar Bilgi Alani */}
-      <section className="px-8 py-16 text-center">
-        <h1 className="text-5xl font-extrabold mb-4">
-          Metin2 Alim Satim Pazari
-        </h1>
-
-        <p className="text-slate-300 mb-8">
-          Ne aradigini yaz. Asistan site icindeki ilanlari ve resmi won fiyatlarini kontrol etsin.
-        </p>
-
-        <div className="mx-auto max-w-4xl bg-slate-900 border border-slate-800 rounded-3xl p-5">
+      <LandingHeader
+        userEmail={userEmail}
+        onLogout={handleLogout}
+      />
+<section className="px-4 py-8 text-center md:px-8">
+<div className="mx-auto max-w-4xl bg-slate-900 border border-slate-800 rounded-3xl p-5">
           <div className="flex flex-col md:flex-row gap-3">
             <input
               value={assistantInput}
@@ -912,7 +840,7 @@ export default function Home() {
 
       <section className="px-8 mb-8">
         <h2 className="text-xl font-bold mb-4 text-yellow-400">
-          1. Sunucu Sec
+          Sunucu Sec
         </h2>
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -932,27 +860,10 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="px-8 mb-12">
-        <h2 className="text-xl font-bold mb-4 text-yellow-400">
-          2. Kategori Sec
-        </h2>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => selectCategory(cat)}
-              className={`rounded-2xl p-5 text-center font-bold border ${
-                selectedCategory === cat
-                  ? "bg-yellow-400 text-black border-yellow-400"
-                  : "bg-slate-900 border-slate-800 hover:border-yellow-400"
-              }`}
-            >
-              {cat === "Tumu" ? "Tumu" : `${categoryIcon(cat)} ${cat}`}
-            </button>
-          ))}
-        </div>
-      </section>
+      <CategoryGroups
+        selectedCategory={selectedCategory}
+        onSelect={selectCategory}
+      />
 
       <section id="ilanlar" className="px-8 pb-16">
         <h2 className="text-2xl font-bold mb-6">
@@ -1028,6 +939,12 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      <WhyMetin2AlSat />
+
+      <TradeGuide />
+
+      <OfficialContact />
 
       <footer className="border-t border-slate-800 text-center text-slate-400 py-8">
         2026 Metin2AlSat.com

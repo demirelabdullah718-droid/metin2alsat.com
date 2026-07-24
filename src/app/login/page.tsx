@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { supabase } from "../../lib/supabase";
@@ -35,7 +35,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white flex items-center justify-center px-4">
+    <main className="min-h-screen bg-transparent text-white flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8">
         <h1 className="text-3xl font-bold text-yellow-400 mb-2">
           Metin2AlSat

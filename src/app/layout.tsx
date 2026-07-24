@@ -13,10 +13,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr">
-      <head>
-        <meta charSet="utf-8" />
-      </head>
-      <body>{children}</body>
+      <body>
+        <div className="site-background" />
+        <div className="site-dark-layer" />
+        <div className="relative z-10 min-h-screen">
+          {children}
+        </div>
+      </body>
     </html>
   );
 }

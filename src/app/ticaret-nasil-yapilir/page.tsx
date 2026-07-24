@@ -1,6 +1,6 @@
-﻿export default function TicaretNasilYapilirPage() {
+export default function TicaretNasilYapilirPage() {
   return (
-    <main className="min-h-screen bg-slate-950 text-white px-4 py-10">
+    <main className="min-h-screen bg-transparent text-white px-4 py-10">
       <div className="mx-auto max-w-4xl bg-slate-900 border border-slate-800 rounded-3xl p-8">
         <a href="/" className="text-yellow-400 font-bold">
           ← Ana sayfaya dön

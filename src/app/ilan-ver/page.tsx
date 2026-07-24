@@ -436,7 +436,7 @@ export default function CreateListingPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white px-6 py-8">
+    <main className="min-h-screen bg-transparent text-white px-6 py-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <button

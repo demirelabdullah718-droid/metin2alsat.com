@@ -125,7 +125,7 @@ export default function IlanDetayPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+      <main className="min-h-screen bg-transparent text-white flex items-center justify-center">
         <p className="text-slate-300">Ilan yukleniyor...</p>
       </main>
     );
@@ -133,7 +133,7 @@ export default function IlanDetayPage() {
 
   if (!listing) {
     return (
-      <main className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+      <main className="min-h-screen bg-transparent text-white flex items-center justify-center">
         <div className="text-center">
           <p className="text-xl mb-4">Ilan bulunamadi.</p>
           <a href="/" className="text-yellow-400 font-bold">
@@ -150,7 +150,7 @@ export default function IlanDetayPage() {
     listing.category === "Karakter" || listing.category === "Hesap";
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white px-4 py-10">
+    <main className="min-h-screen bg-transparent text-white px-4 py-10">
       <div className="mx-auto max-w-5xl">
         <a href="/" className="text-yellow-400 font-bold">
           Ana sayfaya don
