@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
 import AnnouncementBar from "./AnnouncementBar";
 
 type LandingHeaderProps = {
@@ -13,23 +11,6 @@ export default function LandingHeader({
   userEmail,
   onLogout,
 }: LandingHeaderProps) {
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    checkAdmin();
-  }, [userEmail]);
-
-  async function checkAdmin() {
-    if (!userEmail) {
-      setIsAdmin(false);
-      return;
-    }
-
-    const { data, error } = await supabase.rpc("is_admin");
-
-    setIsAdmin(!error && data === true);
-  }
-
   return (
     <>
       <AnnouncementBar />
@@ -49,50 +30,32 @@ export default function LandingHeader({
           <nav className="hidden items-center gap-1 lg:flex">
             <a
               href="/"
-              className="rounded-lg px-3 py-2 font-semibold text-yellow-400 hover:bg-white/5"
+              className="rounded-lg px-4 py-2 font-semibold text-yellow-400 hover:bg-white/5"
             >
               Ana Sayfa
             </a>
 
             <a
               href="/#ilanlar"
-              className="rounded-lg px-3 py-2 font-semibold text-slate-200 hover:bg-white/5 hover:text-yellow-400"
+              className="rounded-lg px-4 py-2 font-semibold text-slate-200 hover:bg-white/5 hover:text-yellow-400"
             >
-              Ilanlar
+              İlanlar
             </a>
 
             <a
               href="/won"
-              className="rounded-lg px-3 py-2 font-semibold text-slate-200 hover:bg-white/5 hover:text-yellow-400"
+              className="rounded-lg px-4 py-2 font-semibold text-slate-200 hover:bg-white/5 hover:text-yellow-400"
             >
               Won Al / Sat
             </a>
-
-            {userEmail && (
-              <a
-                href="/ilanlarim"
-                className="rounded-lg px-3 py-2 font-semibold text-slate-200 hover:bg-white/5 hover:text-yellow-400"
-              >
-                Ilanlarim
-              </a>
-            )}
-
-            {isAdmin && (
-              <a
-                href="/admin/ilanlar"
-                className="rounded-lg bg-purple-500/15 px-3 py-2 font-black text-purple-300 hover:bg-purple-500/25"
-              >
-                Yonetim
-              </a>
-            )}
           </nav>
 
           <div className="flex items-center gap-2">
             <a
               href="/#ticaret-kurallari"
-              className="hidden rounded-xl bg-yellow-400 px-4 py-2 text-sm font-black text-black hover:bg-yellow-500 md:inline-flex"
+              className="inline-flex items-center justify-center rounded-xl bg-yellow-400 px-3 py-2 text-center text-xs font-black text-black transition hover:bg-yellow-500 md:px-5 md:text-sm"
             >
-              Ticaret Nasil Yapilir?
+              Ticaret Nasıl Yapılır?
             </a>
 
             {userEmail ? (
@@ -106,7 +69,7 @@ export default function LandingHeader({
                   onClick={onLogout}
                   className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm font-bold text-red-300 hover:bg-red-500 hover:text-white"
                 >
-                  Cikis
+                  Çıkış
                 </button>
               </>
             ) : (
@@ -118,7 +81,7 @@ export default function LandingHeader({
                   }}
                   className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm font-bold text-white hover:border-yellow-400"
                 >
-                  Giris
+                  Giriş
                 </button>
 
                 <button
@@ -128,7 +91,7 @@ export default function LandingHeader({
                   }}
                   className="hidden rounded-xl bg-slate-800 px-4 py-2 text-sm font-bold text-white hover:bg-slate-700 sm:block"
                 >
-                  Kayit Ol
+                  Kayıt Ol
                 </button>
               </>
             )}
@@ -140,7 +103,7 @@ export default function LandingHeader({
               }}
               className="hidden rounded-xl bg-emerald-500 px-5 py-2 text-sm font-bold text-white hover:bg-emerald-600 md:block"
             >
-              Ilan Ver
+              İlan Ver
             </button>
           </div>
         </div>

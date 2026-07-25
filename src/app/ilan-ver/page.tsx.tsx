@@ -416,7 +416,8 @@ export default function CreateListingPage() {
           expires_at: expiresAt,
           image_url: imageUrl,
           character_details: characterDetails,
-          status: "active",
+          status: "pending",
+          rejection_reason: null,
         })
         .select()
         .single();
@@ -427,7 +428,8 @@ export default function CreateListingPage() {
         return;
       }
 
-      window.location.href = `/ilan/${data.id}`;
+      setMessage("Ilanin yonetim onayina gonderildi.");
+      window.location.href = "/ilanlarim";
     } catch (error) {
       const err = error as Error;
       setMessage("Hata: " + err.message);
@@ -909,7 +911,7 @@ export default function CreateListingPage() {
               disabled={saving}
               className="w-full mt-6 bg-yellow-400 hover:bg-yellow-500 text-black py-4 rounded-xl font-bold disabled:opacity-60"
             >
-              {saving ? "Kaydediliyor..." : "Ilani Yayinla"}
+              {saving ? "Gonderiliyor..." : "Ilani Onaya Gonder"}
             </button>
           </section>
         </form>
