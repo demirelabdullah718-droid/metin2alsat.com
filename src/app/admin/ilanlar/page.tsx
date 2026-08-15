@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../../lib/supabase";
 
-type ListingStatus = "pending" | "active" | "rejected";
+type ListingStatus = "pending" | "active" | "rejected" | "sold";
 
 type Listing = {
   id: string;
@@ -205,7 +205,14 @@ export default function AdminListingsPage() {
             </p>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
+            <a
+              href="/admin/satin-alma"
+              className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-5 py-3 font-bold text-emerald-200 hover:bg-emerald-500/20"
+            >
+              Satin Alma Talepleri
+            </a>
+
             <a
               href="/"
               className="rounded-xl border border-slate-700 px-5 py-3 font-bold hover:border-yellow-400"
@@ -246,6 +253,14 @@ export default function AdminListingsPage() {
             className={tabClass("active")}
           >
             Yayindaki Ilanlar
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setFilter("sold")}
+            className={tabClass("sold")}
+          >
+            Satilan Ilanlar
           </button>
         </div>
 
@@ -369,12 +384,12 @@ export default function AdminListingsPage() {
                   </div>
                 )}
 
-                {filter === "active" && (
+                {(filter === "active" || filter === "sold") && (
                   <a
                     href={"/ilan/" + item.id}
                     className="mt-5 block rounded-xl bg-yellow-400 px-5 py-3 text-center font-black text-black hover:bg-yellow-500"
                   >
-                    Yayindaki Ilani Ac
+                    {filter === "sold" ? "Satilan Ilani Ac" : "Yayindaki Ilani Ac"}
                   </a>
                 )}
               </div>

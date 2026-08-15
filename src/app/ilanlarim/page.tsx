@@ -11,7 +11,7 @@ type Listing = {
   price: number;
   image_url: string | null;
   created_at: string;
-  status: "pending" | "active" | "rejected";
+  status: "pending" | "active" | "rejected" | "sold";
   rejection_reason: string | null;
 };
 
@@ -54,6 +54,7 @@ export default function MyListingsPage() {
 
   function statusText(status: Listing["status"]) {
     if (status === "active") return "Yayinda";
+    if (status === "sold") return "Satildi";
     if (status === "rejected") return "Onaylanmadi";
     return "Onay Bekliyor";
   }
@@ -61,6 +62,10 @@ export default function MyListingsPage() {
   function statusClass(status: Listing["status"]) {
     if (status === "active") {
       return "bg-emerald-500/15 text-emerald-300";
+    }
+
+    if (status === "sold") {
+      return "bg-cyan-500/15 text-cyan-300";
     }
 
     if (status === "rejected") {

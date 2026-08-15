@@ -2,7 +2,6 @@
 import HomeHero from "../components/HomeHero";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
-import LandingHeader from "../components/LandingHeader";
 import AnnouncementBar from "../components/AnnouncementBar";
 import WhyMetin2AlSat from "../components/WhyMetin2AlSat";
 import TradeGuide from "../components/TradeGuide";
@@ -27,6 +26,7 @@ type Listing = {
   description: string | null;
   character_details: CharacterDetails | null;
   created_at: string;
+  status: "active" | "sold";
 };
 
 type WonRate = {
@@ -190,6 +190,7 @@ export default function Home() {
       const { data, error } = await supabase
         .from("listings")
         .select("*")
+        .in("status", ["active", "sold"])
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -957,8 +958,13 @@ export default function Home() {
           {filteredListings.map((item) => (
             <div
               key={item.id}
-              className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden"
+              className="relative bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden"
             >
+              {item.status === "sold" && (
+                <div className="absolute left-3 top-3 z-10 rounded-full bg-red-600 px-4 py-2 text-sm font-black text-white shadow-lg">
+                  SATILDI
+                </div>
+              )}
               {item.image_url ? (
                 <img
                   src={item.image_url}

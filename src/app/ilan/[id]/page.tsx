@@ -1,5 +1,5 @@
 "use client";
-
+import PurchaseButton from "../../../components/PurchaseButton";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
@@ -20,14 +20,15 @@ type Listing = {
   category: string;
   server: string;
   price: number;
-  seller_phone: string | null;
   image_url: string | null;
-  listing_duration_days: number | null;
-  max_delivery_hours: number | null;
-  expires_at: string | null;
   description: string | null;
   character_details: CharacterDetails | null;
   created_at: string;
+  seller_phone: string | null;
+  listing_duration_days: number | null;
+  max_delivery_hours: number | null;
+  expires_at: string | null;
+  status: string | null;
 };
 
 export default function IlanDetayPage() {
@@ -96,6 +97,11 @@ export default function IlanDetayPage() {
 
   async function handleDelete() {
     if (!listing || !currentUserId) return;
+
+    if (listing.status === "sold") {
+      setDeleteMessage("Satilan ilanlar fiyat gecmisi icin arsivde tutulur ve silinemez.");
+      return;
+    }
 
     const confirmDelete = window.confirm(
       "Bu ilani silmek istedigine emin misin?"
@@ -294,12 +300,34 @@ export default function IlanDetayPage() {
             </div>
 
             <div className="mt-8 border-t border-slate-800 pt-6">
+              <PurchaseButton
+                listingId={listing.id}
+                sellerId={listing.user_id}
+                listingStatus={listing.status}
+              />
+            </div>
+
+            <div className="mt-8 border-t border-slate-800 pt-6">
               <h2 className="text-xl font-bold mb-3">Satici Iletisim</h2>
 
-              {listing.seller_phone ? (
-                <p className="text-slate-300">
-                  WhatsApp: {listing.seller_phone}
+              {listing.status === "sold" ? (
+                <p className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-200">
+                  Bu urun satildi. Ilan fiyat gecmisi icin arsivde tutuluyor ve satici iletisim butonu kapatildi.
                 </p>
+              ) : listing.seller_phone ? (
+                <>
+                  <p className="text-slate-300">
+                    WhatsApp: {listing.seller_phone}
+                  </p>
+                  <a
+                    href={createWhatsAppLink()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 block bg-green-500 hover:bg-green-600 px-6 py-4 rounded-xl font-bold text-center"
+                  >
+                    WhatsApp ile Iletisime Gec
+                  </a>
+                </>
               ) : (
                 <p className="text-slate-500">
                   Bu ilanda WhatsApp numarasi yok.
@@ -307,47 +335,33 @@ export default function IlanDetayPage() {
               )}
             </div>
 
-            <div className="mt-8">
-              {listing.seller_phone ? (
-                <a
-                  href={createWhatsAppLink()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block bg-green-500 hover:bg-green-600 px-6 py-4 rounded-xl font-bold text-center"
-                >
-                  WhatsApp ile Iletisime Gec
-                </a>
-              ) : (
-                <button
-                  disabled
-                  className="w-full bg-slate-700 px-6 py-4 rounded-xl font-bold text-slate-400 cursor-not-allowed"
-                >
-                  WhatsApp Numarasi Yok
-                </button>
-              )}
-            </div>
-
             {isOwner && (
               <div className="mt-8 border-t border-slate-800 pt-6">
                 <h2 className="text-xl font-bold mb-4">Ilan Yonetimi</h2>
 
-                <div className="flex flex-col md:flex-row gap-4">
-                  <button
-                    onClick={() =>
-                      (window.location.href = `/ilan-duzenle/${listing.id}`)
-                    }
-                    className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-4 rounded-xl font-bold"
-                  >
-                    Ilani Guncelle
-                  </button>
+                {listing.status === "sold" ? (
+                  <p className="rounded-xl border border-slate-700 bg-slate-800 p-4 text-slate-300">
+                    Bu ilan satildi arsivinde. Fiyat gecmisinin korunmasi icin duzenleme ve silme kapatildi.
+                  </p>
+                ) : (
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <button
+                      onClick={() =>
+                        (window.location.href = `/ilan-duzenle/${listing.id}`)
+                      }
+                      className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-4 rounded-xl font-bold"
+                    >
+                      Ilani Guncelle
+                    </button>
 
-                  <button
-                    onClick={handleDelete}
-                    className="bg-red-500 hover:bg-red-600 text-white px-6 py-4 rounded-xl font-bold"
-                  >
-                    Ilani Sil
-                  </button>
-                </div>
+                    <button
+                      onClick={handleDelete}
+                      className="bg-red-500 hover:bg-red-600 text-white px-6 py-4 rounded-xl font-bold"
+                    >
+                      Ilani Sil
+                    </button>
+                  </div>
+                )}
 
                 {deleteMessage && (
                   <p className="mt-4 text-sm text-slate-300">
