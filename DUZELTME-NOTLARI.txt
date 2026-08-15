@@ -1,0 +1,39 @@
+METIN2ALSAT - DUZELTILMIS PROJE
+================================
+
+Yapilan duzeltmeler:
+- src/app/page.tsx icindeki tekrar eden Listing alanlari temizlendi.
+- Ana sayfa sadece active ve sold ilanlari cekiyor.
+- Satilan ilan kartlarinda SATILDI etiketi icin kart relative hale getirildi.
+- Ilan verme rotasi duzeltildi:
+  src/app/ilan-ver/page.tsx.tsx -> src/app/ilan-ver/page.tsx
+- Eski ilan-ver yedegi TypeScript derlemesinin disina alindi.
+- Ilan detay Listing tipi tamamlandi.
+- Satin Al butonu ilan detayinda daha dogru konuma alindi.
+- Satilan ilanlarda satin alma yerine SATILDI bilgisi gosteriliyor.
+- Satilan ilanda WhatsApp iletisim butonu kapatildi.
+- Satilan ilanin sahibi ilanı silemez/duzenleyemez; arsiv korunur.
+- Ilanlarim sayfasi sold durumunu taniyor ve "Satildi" gosteriyor.
+- Admin ilan paneline "Satilan Ilanlar" sekmesi eklendi.
+- Admin ilan paneline Satin Alma Talepleri kisayolu eklendi.
+- Kaynak dosyalar icin TypeScript yapisal kontrolu calistirildi ve hata vermedi.
+
+ONEMLI:
+.env.local guvenlik nedeniyle bu pakete eklenmedi.
+Kendi mevcut .env.local dosyani koru.
+
+KURULUM:
+1) Mevcut proje klasorunun yedegini al.
+2) Bu ZIP'i yeni bir klasore cikart.
+3) Eski projendeki .env.local dosyasini yeni proje klasorune kopyala.
+4) Terminal:
+   npm.cmd install
+5) Sonra:
+   npm.cmd run build
+6) Build basariliysa:
+   npm.cmd run dev
+
+Not:
+Bu ortamda npm paketlerinin tam kurulumu internet erisimi nedeniyle tamamlanamadigi icin
+gercek Next.js production build'i burada sonuna kadar calistiramadim. Ancak kaynak kod
+TypeScript yapisal kontrolden gecirildi.
