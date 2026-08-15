@@ -32,7 +32,6 @@ export default function LandingHeader({
       return;
     }
 
-    // Profiles tablosundan admin kontrolü
     const { data } = await supabase
       .from("profiles")
       .select("is_admin")
@@ -88,19 +87,19 @@ export default function LandingHeader({
                 Ilanlarim
               </a>
             )}
-
-            {/* Sadece Admin Girişi Yapıldığında Görünür */}
-            {isAdmin && (
-              <a
-                href="/admin"
-                className="rounded-lg bg-yellow-400/20 border border-yellow-400/40 px-3 py-2 font-black text-yellow-300 hover:bg-yellow-400/30"
-              >
-                👑 Onay Bekleyenler
-              </a>
-            )}
           </nav>
 
           <div className="flex items-center gap-2">
+            {/* HER ZAMAN GÖRÜNÜR ADMİN YÖNETİM BUTONU */}
+            {userEmail && isAdmin && (
+              <a
+                href="/admin"
+                className="rounded-xl border border-yellow-400/60 bg-yellow-400/20 px-3 py-2 text-sm font-black text-yellow-300 hover:bg-yellow-400/30"
+              >
+                👑 Yönetim Paneli
+              </a>
+            )}
+
             <a
               href="/#ticaret-kurallari"
               className="hidden rounded-xl bg-yellow-400 px-4 py-2 text-sm font-black text-black hover:bg-yellow-500 md:inline-flex"
@@ -119,7 +118,7 @@ export default function LandingHeader({
                   onClick={onLogout}
                   className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm font-bold text-red-300 hover:bg-red-500 hover:text-white"
                 >
-                  Cikis
+                  Cikis Yap
                 </button>
               </>
             ) : (
