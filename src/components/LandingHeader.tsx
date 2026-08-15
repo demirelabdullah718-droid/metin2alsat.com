@@ -25,9 +25,21 @@ export default function LandingHeader({
       return;
     }
 
-    const { data, error } = await supabase.rpc("is_admin");
+    const { data: { user } } = await supabase.auth.getUser();
 
-    setIsAdmin(!error && data === true);
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+
+    // Profiles tablosundan admin kontrolü
+    const { data } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", user.id)
+      .single();
+
+    setIsAdmin(!!data?.is_admin);
   }
 
   return (
@@ -77,12 +89,13 @@ export default function LandingHeader({
               </a>
             )}
 
+            {/* Sadece Admin Girişi Yapıldığında Görünür */}
             {isAdmin && (
               <a
-                href="/admin/ilanlar"
-                className="rounded-lg bg-purple-500/15 px-3 py-2 font-black text-purple-300 hover:bg-purple-500/25"
+                href="/admin"
+                className="rounded-lg bg-yellow-400/20 border border-yellow-400/40 px-3 py-2 font-black text-yellow-300 hover:bg-yellow-400/30"
               >
-                Yonetim
+                👑 Onay Bekleyenler
               </a>
             )}
           </nav>
