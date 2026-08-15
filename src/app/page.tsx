@@ -54,17 +54,6 @@ const servers = [
   "Arkadaslar",
 ];
 
-const realServers = [
-  "Marmara",
-  "Ezel",
-  "Bagjanamu",
-  "Lucifer",
-  "Charon",
-  "Safir",
-  "Star",
-  "Arkadaslar",
-];
-
 const categories = [
   "Tumu",
   "Karakter",
@@ -124,14 +113,6 @@ const smartTermAliases: Record<string, string[]> = {
   mat: ["mat"],
 };
 
-
-const scrollingTexts = [
-  "BU SITE SADECE METIN2 TR OYUNCULARINA HIZMET VERMEKTEDIR",
-  "RESMI WON ALIM SATIM ICIN METIN2ALSAT EKIBIYLE ILETISIME GECIN",
-  "SUPHELI ILANLARI ADMINLERE BILDIRIN",
-  "GUVENLI TICARET ICIN WHATSAPP DESTEGI KULLANIN",
-  "ILANLARI INCELEMEDEN ODEME YAPMAYIN",
-];
 const stopWords = [
   "istiyorum",
   "istiyom",
@@ -158,6 +139,7 @@ const stopWords = [
 
 export default function Home() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [listings, setListings] = useState<Listing[]>([]);
   const [wonRates, setWonRates] = useState<WonRate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -176,14 +158,22 @@ export default function Home() {
     async function getUser() {
       const { data } = await supabase.auth.getSession();
 
-      if (data.session?.user.email) {
-        setUserEmail(data.session.user.email);
-        localStorage.setItem("metin2alsat_user_email", data.session.user.email);
+      if (data.session?.user) {
+        const email = data.session.user.email || null;
+        setUserEmail(email);
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("is_admin")
+          .eq("id", data.session.user.id)
+          .maybeSingle();
+
+        setIsAdmin(!!profile?.is_admin);
         return;
       }
 
-      const savedEmail = localStorage.getItem("metin2alsat_user_email");
-      setUserEmail(savedEmail);
+      setUserEmail(null);
+      setIsAdmin(false);
     }
 
     async function getListings() {
@@ -222,13 +212,19 @@ export default function Home() {
     getWonRates();
 
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        if (session?.user.email) {
-          setUserEmail(session.user.email);
-          localStorage.setItem("metin2alsat_user_email", session.user.email);
+      async (_event, session) => {
+        if (session?.user) {
+          setUserEmail(session.user.email || null);
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("is_admin")
+            .eq("id", session.user.id)
+            .maybeSingle();
+
+          setIsAdmin(!!profile?.is_admin);
         } else {
           setUserEmail(null);
-          localStorage.removeItem("metin2alsat_user_email");
+          setIsAdmin(false);
         }
       }
     );
@@ -264,10 +260,12 @@ export default function Home() {
       }
     }
   }, []);
+
   async function handleLogout() {
     await supabase.auth.signOut();
     localStorage.removeItem("metin2alsat_user_email");
     setUserEmail(null);
+    setIsAdmin(false);
   }
 
   function normalizeText(text: string | null | undefined) {
@@ -465,6 +463,7 @@ export default function Home() {
       });
     }, 50);
   }
+
   function categoryIcon(category: string) {
     if (normalizeText(category) === "karakter") return "K";
     if (normalizeText(category) === "yang") return "Y";
@@ -673,7 +672,7 @@ export default function Home() {
         }
       `}</style>
 
-      <header className="flex items-center justify-between px-8 py-5 border-b border-slate-800">
+      <header className="flex flex-wrap items-center justify-between gap-3 px-8 py-5 border-b border-slate-800">
         <button
           onClick={() => (window.location.href = "/")}
           className="text-3xl font-bold text-yellow-400"
@@ -681,55 +680,73 @@ export default function Home() {
           Metin2AlSat
         </button>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {userEmail && isAdmin && (
+            <a
+              href="/admin"
+              className="bg-yellow-400/20 border border-yellow-400/60 text-yellow-300 hover:bg-yellow-400/30 px-4 py-2 rounded-xl font-black text-sm"
+            >
+              👑 Yönetim Paneli
+            </a>
+          )}
+
+          {userEmail && (
+            <a
+              href="/ilanlarim"
+              className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl font-bold text-sm"
+            >
+              İlanlarım
+            </a>
+          )}
+
           <a
             href="/won"
-            className="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2 rounded-xl font-bold"
+            className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold text-sm"
           >
             Resmi Won Al / Sat
           </a>
 
           <a
             href="/ticaret-nasil-yapilir"
-            className="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2 rounded-xl font-bold"
+            className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl font-bold text-sm"
           >
-            Ticaret Nasil Yapilir?
+            Ticaret Nasıl Yapılır?
           </a>
 
           {userEmail ? (
             <>
-              <span className="text-sm text-slate-300">{userEmail}</span>
+              <span className="text-sm text-slate-300 hidden md:inline">{userEmail}</span>
 
               <button
                 onClick={handleLogout}
-                className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-xl font-bold"
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-bold text-sm"
               >
-                Cikis Yap
+                Çıkış Yap
               </button>
             </>
           ) : (
             <>
               <button
                 onClick={() => (window.location.href = "/login")}
-                className="bg-yellow-400 hover:bg-yellow-500 text-black px-5 py-2 rounded-xl font-bold"
+                className="bg-yellow-400 hover:bg-yellow-500 text-black px-4 py-2 rounded-xl font-bold text-sm"
               >
-                Giris Yap
+                Giriş Yap
               </button>
 
               <button
                 onClick={() => (window.location.href = "/register")}
-                className="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2 rounded-xl font-bold"
+                className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl font-bold text-sm"
               >
-                Kayit Ol
+                Kayıt Ol
               </button>
             </>
           )}
 
           <button
             onClick={() => (window.location.href = "/ilan-ver")}
-            className="bg-emerald-500 hover:bg-emerald-600 px-5 py-2 rounded-xl font-bold"
+            className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold text-sm"
           >
-            Ilan Ver
+            İlan Ver
           </button>
         </div>
       </header>
@@ -1018,14 +1035,3 @@ export default function Home() {
     </main>
   );
 }
-[build]
-  command = "npm run build"
-  publish = ".next"
-
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
