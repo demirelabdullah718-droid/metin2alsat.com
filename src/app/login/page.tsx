@@ -53,18 +53,29 @@ export default function LoginPage() {
             required
           />
 
-          <input
-            type="password"
-            placeholder="Şifre"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl px-4 py-3 bg-white text-black placeholder:text-gray-500"
-            required
-          />
+          <div>
+            <input
+              type="password"
+              placeholder="Şifre"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-xl px-4 py-3 bg-white text-black placeholder:text-gray-500"
+              required
+            />
+            
+            <div className="text-right mt-2">
+              <a 
+                href="/forgot-password" 
+                className="text-xs text-yellow-400 hover:underline font-semibold"
+              >
+                Şifremi Unuttum?
+              </a>
+            </div>
+          </div>
 
           <button
             type="submit"
-            className="w-full bg-yellow-400 hover:bg-yellow-500 text-black py-3 rounded-xl font-bold"
+            className="w-full bg-yellow-400 hover:bg-yellow-500 text-black py-3 rounded-xl font-bold transition-colors"
           >
             Giriş Yap
           </button>

@@ -120,18 +120,6 @@ const bonusOptions: Record<string, string[]> = {
   ],
 };
 
-const marketExtras = [
-  "3. El",
-  "Otomatik Av",
-  "Premium Pazar",
-  "Depo Sandigi",
-  "Kostum",
-  "Pet",
-  "Binek",
-  "Saman Paketi",
-  "Diger",
-];
-
 const subCharacterBuilds = [
   "-",
   "Bedensel",
@@ -187,6 +175,7 @@ export default function CreateListingPage() {
 
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const showCharacterPanel = category === "Karakter" || category === "Hesap";
 
@@ -266,10 +255,11 @@ export default function CreateListingPage() {
     setSubCharacters((prev) => prev.filter((_, itemIndex) => itemIndex !== index));
   }
 
+  // 100 KB HEDEF BOYUTLU FOTOĞRAF SIKIŞTIRMA
   async function compressImageFile(file: File): Promise<File> {
-    const maxWidth = 1200;
-    const maxHeight = 1200;
-    const maxSizeBytes = 1024 * 1024;
+    const maxWidth = 1000;
+    const maxHeight = 1000;
+    const maxSizeBytes = 100 * 1024; // 100 KB hedef
 
     const imageUrl = URL.createObjectURL(file);
 
@@ -315,11 +305,11 @@ export default function CreateListingPage() {
       });
     }
 
-    let quality = 0.8;
+    let quality = 0.7;
     let blob = await canvasToBlob(quality);
 
-    while (blob.size > maxSizeBytes && quality > 0.45) {
-      quality = quality - 0.1;
+    while (blob.size > maxSizeBytes && quality > 0.2) {
+      quality -= 0.1;
       blob = await canvasToBlob(quality);
     }
 
@@ -401,7 +391,7 @@ export default function CreateListingPage() {
           }
         : {};
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("listings")
         .insert({
           user_id: userId,
@@ -418,9 +408,7 @@ export default function CreateListingPage() {
           character_details: characterDetails,
           status: "pending",
           rejection_reason: null,
-        })
-        .select()
-        .single();
+        });
 
       if (error) {
         setMessage("Hata: " + error.message);
@@ -428,8 +416,8 @@ export default function CreateListingPage() {
         return;
       }
 
-      setMessage("Ilanin yonetim onayina gonderildi.");
-      window.location.href = "/ilanlarim";
+      setSaving(false);
+      setIsSubmitted(true);
     } catch (error) {
       const err = error as Error;
       setMessage("Hata: " + err.message);
@@ -456,465 +444,499 @@ export default function CreateListingPage() {
           </button>
         </div>
 
-        <h1 className="text-4xl font-extrabold mb-2">Ilan Ver</h1>
-        <p className="text-slate-400 mb-8">
-          Karakter ve hesap ilanlarinda ana karakter, simya ve istege bagli alt karakter ekleyebilirsin.
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-            <h2 className="text-xl font-bold text-yellow-400 mb-5">
-              Temel Bilgiler
-            </h2>
-
-            <div className="grid md:grid-cols-2 gap-5">
-              <div>
-                <label className="block mb-2 text-sm text-slate-300">
-                  Ilan Basligi
-                </label>
-                <input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full rounded-xl px-4 py-3 bg-white text-black"
-                  placeholder="Ornek: 2x Ninja Hesap"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block mb-2 text-sm text-slate-300">
-                  Kategori
-                </label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full rounded-xl px-4 py-3 bg-white text-black"
-                >
-                  {categories.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block mb-2 text-sm text-slate-300">
-                  Sunucu
-                </label>
-                <select
-                  value={server}
-                  onChange={(e) => setServer(e.target.value)}
-                  className="w-full rounded-xl px-4 py-3 bg-white text-black"
-                >
-                  {servers.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block mb-2 text-sm text-slate-300">
-                  Fiyat TL
-                </label>
-                <input
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  type="number"
-                  className="w-full rounded-xl px-4 py-3 bg-white text-black"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block mb-2 text-sm text-slate-300">
-                  WhatsApp / Telefon
-                </label>
-                <input
-                  value={sellerPhone}
-                  onChange={(e) => setSellerPhone(e.target.value)}
-                  className="w-full rounded-xl px-4 py-3 bg-white text-black"
-                  placeholder="905xxxxxxxxx"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-2 text-sm text-slate-300">
-                  Ilan Gorseli
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setSelectedImage(e.target.files?.[0] || null)}
-                  className="w-full rounded-xl px-4 py-3 bg-white text-black"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-2 text-sm text-slate-300">
-                  Ilan Suresi Gun
-                </label>
-                <input
-                  value={listingDurationDays}
-                  onChange={(e) => setListingDurationDays(e.target.value)}
-                  type="number"
-                  className="w-full rounded-xl px-4 py-3 bg-white text-black"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-2 text-sm text-slate-300">
-                  Maksimum Teslim Saati
-                </label>
-                <input
-                  value={maxDeliveryHours}
-                  onChange={(e) => setMaxDeliveryHours(e.target.value)}
-                  type="number"
-                  className="w-full rounded-xl px-4 py-3 bg-white text-black"
-                />
-              </div>
+        {isSubmitted ? (
+          <div className="mx-auto my-12 max-w-2xl rounded-3xl border border-emerald-500/30 bg-emerald-500/10 p-8 text-center backdrop-blur-xl">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20 text-3xl text-emerald-400">
+              ✓
             </div>
-          </section>
+            
+            <h2 className="text-3xl font-extrabold text-white">
+              İlanınız Başarıyla Gönderildi!
+            </h2>
+            
+            <p className="mt-3 text-slate-300">
+              İlanınız yönetim onayına sunulmuştur. Yönetici kontrolünden geçtikten sonra yayına alınacaktır.
+            </p>
 
-          {showCharacterPanel && (
-            <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-              <h2 className="text-xl font-bold text-yellow-400 mb-5">
-                Ana Karakter Bilgileri
-              </h2>
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <a
+                href="/"
+                className="w-full sm:w-auto rounded-xl bg-yellow-400 px-6 py-3.5 font-black text-black hover:bg-yellow-500 transition-colors"
+              >
+                🏠 Ana Sayfaya Dön
+              </a>
 
-              <div className="grid md:grid-cols-3 gap-5">
-                <div>
-                  <label className="block mb-2 text-sm text-slate-300">
-                    Sinif
-                  </label>
-                  <select
-                    value={characterClass}
-                    onChange={(e) => handleClassChange(e.target.value)}
-                    className="w-full rounded-xl px-4 py-3 bg-white text-black"
-                  >
-                    {characterClasses.map((item) => (
-                      <option key={item} value={item}>
-                        {item}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              <a
+                href="/ilanlarim"
+                className="w-full sm:w-auto rounded-xl border border-slate-700 bg-slate-900 px-6 py-3.5 font-bold text-white hover:border-yellow-400 transition-colors"
+              >
+                📋 İlanlarımı Gör
+              </a>
+            </div>
+          </div>
+        ) : (
+          <>
+            <h1 className="text-4xl font-extrabold mb-2">Ilan Ver</h1>
+            <p className="text-slate-400 mb-8">
+              Karakter ve hesap ilanlarinda ana karakter, simya ve istege bagli alt karakter ekleyebilirsin.
+            </p>
 
-                <div>
-                  <label className="block mb-2 text-sm text-slate-300">
-                    Build
-                  </label>
-                  <select
-                    value={characterBuild}
-                    onChange={(e) => setCharacterBuild(e.target.value)}
-                    className="w-full rounded-xl px-4 py-3 bg-white text-black"
-                  >
-                    {(buildsByClass[characterClass] || ["-"]).map((item) => (
-                      <option key={item} value={item}>
-                        {item}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                <h2 className="text-xl font-bold text-yellow-400 mb-5">
+                  Temel Bilgiler
+                </h2>
 
-                <div>
-                  <label className="block mb-2 text-sm text-slate-300">
-                    Biyolog Durumu
-                  </label>
-                  <input
-                    value={biolog}
-                    onChange={(e) => setBiolog(e.target.value)}
-                    className="w-full rounded-xl px-4 py-3 bg-white text-black"
-                    placeholder="Ornek: Lider notu"
-                  />
-                </div>
-              </div>
+                <div className="grid md:grid-cols-2 gap-5">
+                  <div>
+                    <label className="block mb-2 text-sm text-slate-300">
+                      Ilan Basligi
+                    </label>
+                    <input
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      className="w-full rounded-xl px-4 py-3 bg-white text-black"
+                      placeholder="Ornek: 2x Ninja Hesap"
+                      required
+                    />
+                  </div>
 
-              <div className="mt-8">
-                <div className="flex items-center justify-between gap-4 mb-4">
-                  <h3 className="text-lg font-bold text-yellow-400">
-                    Kucuk Simya Paneli
-                  </h3>
-                  <p className="text-sm text-slate-400">
-                    Efsunlari gormek icin tas kutusunu ac.
-                  </p>
-                </div>
-
-                <div className="grid md:grid-cols-4 gap-3">
-                  {stones.map((stone) => (
-                    <details
-                      key={stone}
-                      className="bg-slate-950 border border-slate-800 rounded-xl p-3"
+                  <div>
+                    <label className="block mb-2 text-sm text-slate-300">
+                      Kategori
+                    </label>
+                    <select
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      className="w-full rounded-xl px-4 py-3 bg-white text-black"
                     >
-                      <summary className="cursor-pointer list-none">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="font-bold text-yellow-400">
-                            {stone}
-                          </span>
-                          <span className="text-xs text-slate-400">
-                            Efsun
-                          </span>
-                        </div>
+                      {categories.map((item) => (
+                        <option key={item} value={item}>
+                          {item}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                        <select
-                          value={alchemy[stone] ?? "Yok"}
-                          onChange={(e) =>
-                            setAlchemy((prev) => ({
-                              ...prev,
-                              [stone]: e.target.value,
-                            }))
-                          }
-                          className="w-full mt-2 rounded-lg px-3 py-2 bg-white text-black text-sm"
-                        >
-                          {purityOptions.map((item) => (
-                            <option key={item} value={item}>
-                              {item}
-                            </option>
-                          ))}
-                        </select>
-                      </summary>
+                  <div>
+                    <label className="block mb-2 text-sm text-slate-300">
+                      Sunucu
+                    </label>
+                    <select
+                      value={server}
+                      onChange={(e) => setServer(e.target.value)}
+                      className="w-full rounded-xl px-4 py-3 bg-white text-black"
+                    >
+                      {servers.map((item) => (
+                        <option key={item} value={item}>
+                          {item}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {(bonusOptions[stone] || []).map((bonus) => (
-                          <button
-                            key={bonus}
-                            type="button"
-                            onClick={() => toggleAlchemyBonus(stone, bonus)}
-                            className={`px-2 py-1 rounded-lg text-xs font-bold border ${
-                              (alchemyBonuses[stone] || []).includes(bonus)
-                                ? "bg-yellow-400 text-black border-yellow-400"
-                                : "bg-slate-900 text-white border-slate-700"
-                            }`}
-                          >
-                            {bonus}
-                          </button>
-                        ))}
-                      </div>
-                    </details>
-                  ))}
+                  <div>
+                    <label className="block mb-2 text-sm text-slate-300">
+                      Fiyat TL
+                    </label>
+                    <input
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      type="number"
+                      className="w-full rounded-xl px-4 py-3 bg-white text-black"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-2 text-sm text-slate-300">
+                      WhatsApp / Telefon
+                    </label>
+                    <input
+                      value={sellerPhone}
+                      onChange={(e) => setSellerPhone(e.target.value)}
+                      className="w-full rounded-xl px-4 py-3 bg-white text-black"
+                      placeholder="905xxxxxxxxx"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-2 text-sm text-slate-300">
+                      Ilan Gorseli
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setSelectedImage(e.target.files?.[0] || null)}
+                      className="w-full rounded-xl px-4 py-3 bg-white text-black"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-2 text-sm text-slate-300">
+                      Ilan Suresi Gun
+                    </label>
+                    <input
+                      value={listingDurationDays}
+                      onChange={(e) => setListingDurationDays(e.target.value)}
+                      type="number"
+                      className="w-full rounded-xl px-4 py-3 bg-white text-black"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-2 text-sm text-slate-300">
+                      Maksimum Teslim Saati
+                    </label>
+                    <input
+                      value={maxDeliveryHours}
+                      onChange={(e) => setMaxDeliveryHours(e.target.value)}
+                      type="number"
+                      className="w-full rounded-xl px-4 py-3 bg-white text-black"
+                    />
+                  </div>
                 </div>
-              </div>
+              </section>
 
-              <div className="mt-8">
-                <h3 className="text-lg font-bold text-yellow-400 mb-4">
-                  Nesne Market Ozellikleri
-                </h3>
-
-                <textarea
-                  value={marketExtraNote}
-                  onChange={(e) => setMarketExtraNote(e.target.value)}
-                  className="w-full min-h-28 rounded-xl px-4 py-3 bg-white text-black"
-                  placeholder="Nazar tilsimi, site markasi, EP bakiyeniz vb urunleriniz varsa buraya yaziniz."
-                />
-              </div>
-            </section>
-          )}
-
-          {showCharacterPanel && (
-            <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-              <div className="flex items-center justify-between gap-4 mb-5">
-                <div>
-                  <h2 className="text-xl font-bold text-yellow-400">
-                    Alt Karakterler
+              {showCharacterPanel && (
+                <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                  <h2 className="text-xl font-bold text-yellow-400 mb-5">
+                    Ana Karakter Bilgileri
                   </h2>
-                  <p className="text-slate-400 text-sm">
-                    Istege baglidir. Bos birakirsan ilana eklenmez.
-                  </p>
-                </div>
 
-                <button
-                  type="button"
-                  onClick={addSubCharacter}
-                  className="bg-yellow-400 hover:bg-yellow-500 text-black px-5 py-3 rounded-xl font-bold"
-                >
-                  + Alt Karakter Ekle
-                </button>
-              </div>
-
-              {subCharacters.length === 0 && (
-                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-5 text-slate-300">
-                  Alt karakter eklemek istemiyorsan bu bolumu bos birakabilirsin.
-                </div>
-              )}
-
-              <div className="space-y-5">
-                {subCharacters.map((item, index) => (
-                  <div
-                    key={index}
-                    className="bg-slate-950 border border-slate-800 rounded-2xl p-5"
-                  >
-                    <div className="flex items-center justify-between mb-5">
-                      <h3 className="text-lg font-bold text-yellow-400">
-                        Alt Karakter {index + 1}
-                      </h3>
-
-                      <button
-                        type="button"
-                        onClick={() => removeSubCharacter(index)}
-                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-bold"
+                  <div className="grid md:grid-cols-3 gap-5">
+                    <div>
+                      <label className="block mb-2 text-sm text-slate-300">
+                        Sinif
+                      </label>
+                      <select
+                        value={characterClass}
+                        onChange={(e) => handleClassChange(e.target.value)}
+                        className="w-full rounded-xl px-4 py-3 bg-white text-black"
                       >
-                        Sil
-                      </button>
+                        {characterClasses.map((item) => (
+                          <option key={item} value={item}>
+                            {item}
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-5">
-                      <div>
-                        <label className="block mb-2 text-sm text-slate-300">
-                          Baslik / Kisa Not
-                        </label>
-                        <input
-                          value={item.title || ""}
-                          onChange={(e) =>
-                            updateSubCharacter(index, "title", e.target.value)
-                          }
-                          className="w-full rounded-xl px-4 py-3 bg-white text-black"
-                          placeholder="Ornek: Sampiyon 1 Ninja"
-                        />
-                      </div>
+                    <div>
+                      <label className="block mb-2 text-sm text-slate-300">
+                        Build
+                      </label>
+                      <select
+                        value={characterBuild}
+                        onChange={(e) => setCharacterBuild(e.target.value)}
+                        className="w-full rounded-xl px-4 py-3 bg-white text-black"
+                      >
+                        {(buildsByClass[characterClass] || ["-"]).map((item) => (
+                          <option key={item} value={item}>
+                            {item}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                      <div>
-                        <label className="block mb-2 text-sm text-slate-300">
-                          Sinif
-                        </label>
-                        <select
-                          value={item.class || "Ninja"}
-                          onChange={(e) =>
-                            updateSubCharacter(index, "class", e.target.value)
-                          }
-                          className="w-full rounded-xl px-4 py-3 bg-white text-black"
-                        >
-                          {characterClasses.map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block mb-2 text-sm text-slate-300">
-                          Build
-                        </label>
-                        <select
-                          value={item.build || "-"}
-                          onChange={(e) =>
-                            updateSubCharacter(index, "build", e.target.value)
-                          }
-                          className="w-full rounded-xl px-4 py-3 bg-white text-black"
-                        >
-                          {subCharacterBuilds.map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block mb-2 text-sm text-slate-300">
-                          Seviye / Durum
-                        </label>
-                        <input
-                          value={item.level || ""}
-                          onChange={(e) =>
-                            updateSubCharacter(index, "level", e.target.value)
-                          }
-                          className="w-full rounded-xl px-4 py-3 bg-white text-black"
-                          placeholder="Ornek: Sampiyon 1"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block mb-2 text-sm text-slate-300">
-                          Simya Paneli
-                        </label>
-                        <input
-                          value={item.alchemyPanel || ""}
-                          onChange={(e) =>
-                            updateSubCharacter(index, "alchemyPanel", e.target.value)
-                          }
-                          className="w-full rounded-xl px-4 py-3 bg-white text-black"
-                          placeholder="Ornek: Kusursuz Panel, Mitsi Mat Set"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block mb-2 text-sm text-slate-300">
-                          Biyolog Durumu
-                        </label>
-                        <input
-                          value={item.biolog || ""}
-                          onChange={(e) =>
-                            updateSubCharacter(index, "biolog", e.target.value)
-                          }
-                          className="w-full rounded-xl px-4 py-3 bg-white text-black"
-                          placeholder="Ornek: Lider notu, Buz topu"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block mb-2 text-sm text-slate-300">
-                          Envanter Notu
-                        </label>
-                        <input
-                          value={item.inventoryNote || ""}
-                          onChange={(e) =>
-                            updateSubCharacter(index, "inventoryNote", e.target.value)
-                          }
-                          className="w-full rounded-xl px-4 py-3 bg-white text-black"
-                          placeholder="Ornek: 13x uste giden 7g eldiven var"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block mb-2 text-sm text-slate-300">
-                          Ek Not
-                        </label>
-                        <input
-                          value={item.extraNote || ""}
-                          onChange={(e) =>
-                            updateSubCharacter(index, "extraNote", e.target.value)
-                          }
-                          className="w-full rounded-xl px-4 py-3 bg-white text-black"
-                          placeholder="Ornek: Depoda item var"
-                        />
-                      </div>
+                    <div>
+                      <label className="block mb-2 text-sm text-slate-300">
+                        Biyolog Durumu
+                      </label>
+                      <input
+                        value={biolog}
+                        onChange={(e) => setBiolog(e.target.value)}
+                        className="w-full rounded-xl px-4 py-3 bg-white text-black"
+                        placeholder="Ornek: Lider notu"
+                      />
                     </div>
                   </div>
-                ))}
-              </div>
-            </section>
-          )}
 
-          <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-            <h2 className="text-xl font-bold text-yellow-400 mb-5">
-              Aciklama
-            </h2>
+                  <div className="mt-8">
+                    <div className="flex items-center justify-between gap-4 mb-4">
+                      <h3 className="text-lg font-bold text-yellow-400">
+                        Kucuk Simya Paneli
+                      </h3>
+                      <p className="text-sm text-slate-400">
+                        Efsunlari gormek icin tas kutusunu ac.
+                      </p>
+                    </div>
 
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full min-h-40 rounded-xl px-4 py-3 bg-white text-black"
-              placeholder="Ilan aciklamasi..."
-            />
+                    <div className="grid md:grid-cols-4 gap-3">
+                      {stones.map((stone) => (
+                        <details
+                          key={stone}
+                          className="bg-slate-950 border border-slate-800 rounded-xl p-3"
+                        >
+                          <summary className="cursor-pointer list-none">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-bold text-yellow-400">
+                                {stone}
+                              </span>
+                              <span className="text-xs text-slate-400">
+                                Efsun
+                              </span>
+                            </div>
 
-            {message && (
-              <p className="mt-5 text-slate-300">
-                {message}
-              </p>
-            )}
+                            <select
+                              value={alchemy[stone] ?? "Yok"}
+                              onChange={(e) =>
+                                setAlchemy((prev) => ({
+                                  ...prev,
+                                  [stone]: e.target.value,
+                                }))
+                              }
+                              className="w-full mt-2 rounded-lg px-3 py-2 bg-white text-black text-sm"
+                            >
+                              {purityOptions.map((item) => (
+                                <option key={item} value={item}>
+                                  {item}
+                                </option>
+                              ))}
+                            </select>
+                          </summary>
 
-            <button
-              type="submit"
-              disabled={saving}
-              className="w-full mt-6 bg-yellow-400 hover:bg-yellow-500 text-black py-4 rounded-xl font-bold disabled:opacity-60"
-            >
-              {saving ? "Gonderiliyor..." : "Ilani Onaya Gonder"}
-            </button>
-          </section>
-        </form>
+                          <div className="flex flex-wrap gap-2 mt-3">
+                            {(bonusOptions[stone] || []).map((bonus) => (
+                              <button
+                                key={bonus}
+                                type="button"
+                                onClick={() => toggleAlchemyBonus(stone, bonus)}
+                                className={`px-2 py-1 rounded-lg text-xs font-bold border ${
+                                  (alchemyBonuses[stone] || []).includes(bonus)
+                                    ? "bg-yellow-400 text-black border-yellow-400"
+                                    : "bg-slate-900 text-white border-slate-700"
+                                }`}
+                              >
+                                {bonus}
+                              </button>
+                            ))}
+                          </div>
+                        </details>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-8">
+                    <h3 className="text-lg font-bold text-yellow-400 mb-4">
+                      Nesne Market Ozellikleri
+                    </h3>
+
+                    <textarea
+                      value={marketExtraNote}
+                      onChange={(e) => setMarketExtraNote(e.target.value)}
+                      className="w-full min-h-28 rounded-xl px-4 py-3 bg-white text-black"
+                      placeholder="Nazar tilsimi, site markasi, EP bakiyeniz vb urunleriniz varsa buraya yaziniz."
+                    />
+                  </div>
+                </section>
+              )}
+
+              {showCharacterPanel && (
+                <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                  <div className="flex items-center justify-between gap-4 mb-5">
+                    <div>
+                      <h2 className="text-xl font-bold text-yellow-400">
+                        Alt Karakterler
+                      </h2>
+                      <p className="text-slate-400 text-sm">
+                        Istege baglidir. Bos birakirsan ilana eklenmez.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={addSubCharacter}
+                      className="bg-yellow-400 hover:bg-yellow-500 text-black px-5 py-3 rounded-xl font-bold"
+                    >
+                      + Alt Karakter Ekle
+                    </button>
+                  </div>
+
+                  {subCharacters.length === 0 && (
+                    <div className="bg-slate-950 border border-slate-800 rounded-2xl p-5 text-slate-300">
+                      Alt karakter eklemek istemiyorsan bu bolumu bos birakabilirsin.
+                    </div>
+                  )}
+
+                  <div className="space-y-5">
+                    {subCharacters.map((item, index) => (
+                      <div
+                        key={index}
+                        className="bg-slate-950 border border-slate-800 rounded-2xl p-5"
+                      >
+                        <div className="flex items-center justify-between mb-5">
+                          <h3 className="text-lg font-bold text-yellow-400">
+                            Alt Karakter {index + 1}
+                          </h3>
+
+                          <button
+                            type="button"
+                            onClick={() => removeSubCharacter(index)}
+                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-bold"
+                          >
+                            Sil
+                          </button>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-5">
+                          <div>
+                            <label className="block mb-2 text-sm text-slate-300">
+                              Baslik / Kisa Not
+                            </label>
+                            <input
+                              value={item.title || ""}
+                              onChange={(e) =>
+                                updateSubCharacter(index, "title", e.target.value)
+                              }
+                              className="w-full rounded-xl px-4 py-3 bg-white text-black"
+                              placeholder="Ornek: Sampiyon 1 Ninja"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block mb-2 text-sm text-slate-300">
+                              Sinif
+                            </label>
+                            <select
+                              value={item.class || "Ninja"}
+                              onChange={(e) =>
+                                updateSubCharacter(index, "class", e.target.value)
+                              }
+                              className="w-full rounded-xl px-4 py-3 bg-white text-black"
+                            >
+                              {characterClasses.map((option) => (
+                                <option key={option} value={option}>
+                                  {option}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block mb-2 text-sm text-slate-300">
+                              Build
+                            </label>
+                            <select
+                              value={item.build || "-"}
+                              onChange={(e) =>
+                                updateSubCharacter(index, "build", e.target.value)
+                              }
+                              className="w-full rounded-xl px-4 py-3 bg-white text-black"
+                            >
+                              {subCharacterBuilds.map((option) => (
+                                <option key={option} value={option}>
+                                  {option}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block mb-2 text-sm text-slate-300">
+                              Seviye / Durum
+                            </label>
+                            <input
+                              value={item.level || ""}
+                              onChange={(e) =>
+                                updateSubCharacter(index, "level", e.target.value)
+                              }
+                              className="w-full rounded-xl px-4 py-3 bg-white text-black"
+                              placeholder="Ornek: Sampiyon 1"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block mb-2 text-sm text-slate-300">
+                              Simya Paneli
+                            </label>
+                            <input
+                              value={item.alchemyPanel || ""}
+                              onChange={(e) =>
+                                updateSubCharacter(index, "alchemyPanel", e.target.value)
+                              }
+                              className="w-full rounded-xl px-4 py-3 bg-white text-black"
+                              placeholder="Ornek: Kusursuz Panel, Mitsi Mat Set"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block mb-2 text-sm text-slate-300">
+                              Biyolog Durumu
+                            </label>
+                            <input
+                              value={item.biolog || ""}
+                              onChange={(e) =>
+                                updateSubCharacter(index, "biolog", e.target.value)
+                              }
+                              className="w-full rounded-xl px-4 py-3 bg-white text-black"
+                              placeholder="Ornek: Lider notu, Buz topu"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block mb-2 text-sm text-slate-300">
+                              Envanter Notu
+                            </label>
+                            <input
+                              value={item.inventoryNote || ""}
+                              onChange={(e) =>
+                                updateSubCharacter(index, "inventoryNote", e.target.value)
+                              }
+                              className="w-full rounded-xl px-4 py-3 bg-white text-black"
+                              placeholder="Ornek: 13x uste giden 7g eldiven var"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block mb-2 text-sm text-slate-300">
+                              Ek Not
+                            </label>
+                            <input
+                              value={item.extraNote || ""}
+                              onChange={(e) =>
+                                updateSubCharacter(index, "extraNote", e.target.value)
+                              }
+                              className="w-full rounded-xl px-4 py-3 bg-white text-black"
+                              placeholder="Ornek: Depoda item var"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                <h2 className="text-xl font-bold text-yellow-400 mb-5">
+                  Aciklama
+                </h2>
+
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full min-h-40 rounded-xl px-4 py-3 bg-white text-black"
+                  placeholder="Ilan aciklamasi..."
+                />
+
+                {message && (
+                  <p className="mt-5 text-slate-300">
+                    {message}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="w-full mt-6 bg-yellow-400 hover:bg-yellow-500 text-black py-4 rounded-xl font-bold disabled:opacity-60"
+                >
+                  {saving ? "Gonderiliyor..." : "Ilani Onaya Gonder"}
+                </button>
+              </section>
+            </form>
+          </>
+        )}
       </div>
     </main>
   );

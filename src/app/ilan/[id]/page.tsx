@@ -39,6 +39,7 @@ export default function IlanDetayPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleteMessage, setDeleteMessage] = useState("");
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   useEffect(() => {
     async function loadPage() {
@@ -164,11 +165,21 @@ export default function IlanDetayPage() {
 
         <div className="mt-8 bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden">
           {listing.image_url ? (
-            <img
-              src={listing.image_url}
-              alt={listing.title}
-              className="w-full max-h-[420px] object-cover"
-            />
+            <div
+              className="relative cursor-pointer overflow-hidden group"
+              onClick={() => setIsImageModalOpen(true)}
+            >
+              <img
+                src={listing.image_url}
+                alt={listing.title}
+                className="w-full max-h-[420px] object-cover transition-transform duration-300 group-hover:scale-102"
+              />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <span className="bg-black/70 text-white font-bold px-4 py-2 rounded-xl text-sm border border-yellow-400/50">
+                  🔍 Tam Boyut Görmek İçin Tıkla
+                </span>
+              </div>
+            </div>
           ) : (
             <div className="h-72 flex items-center justify-center text-7xl bg-slate-800">
               {categoryIcon(listing.category)}
@@ -373,6 +384,28 @@ export default function IlanDetayPage() {
           </div>
         </div>
       </div>
+
+      {/* GÖRSELİ TAM BOYUTTA BÜYÜTEN MODAL (POPUP) */}
+      {isImageModalOpen && listing.image_url && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-md cursor-pointer"
+          onClick={() => setIsImageModalOpen(false)}
+        >
+          <div className="relative max-h-[90vh] max-w-[90vw]" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setIsImageModalOpen(false)}
+              className="absolute -top-12 right-0 rounded-xl bg-red-500/80 hover:bg-red-600 px-4 py-2 font-bold text-white transition-colors"
+            >
+              ✕ Kapat
+            </button>
+            <img
+              src={listing.image_url}
+              alt={listing.title}
+              className="max-h-[85vh] max-w-[85vw] rounded-2xl object-contain shadow-2xl border border-slate-800"
+            />
+          </div>
+        </div>
+      )}
     </main>
   );
 }
