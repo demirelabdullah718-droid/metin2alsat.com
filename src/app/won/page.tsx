@@ -18,18 +18,24 @@ export default function WonPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Admin düzenleme formu için state'ler
+  // Sayfa bilgi/not yazısı için state'ler
+  const [pageNotice, setPageNotice] = useState("");
+  const [isEditingNotice, setIsEditingNotice] = useState(false);
+  const [noticeInput, setNoticeInput] = useState("");
+
+  // Sunucu düzenleme formu için state'ler
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editServerName, setEditServerName] = useState("");
   const [editBuy, setEditBuy] = useState<number | ''>('');
   const [editSell, setEditSell] = useState<number | ''>('');
   const [editWhatsapp, setEditWhatsapp] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
   useEffect(() => {
-    checkUserAndRates();
+    checkUserAndData();
   }, []);
 
-  async function checkUserAndRates() {
+  async function checkUserAndData() {
     setLoading(true);
     const { data: sessionData } = await supabase.auth.getSession();
     const user = sessionData.session?.user;
@@ -45,20 +51,51 @@ export default function WonPage() {
       setIsAdmin(!!profile?.is_admin);
     }
 
-    const { data, error } = await supabase
+    // Won kurlarını çek
+    const { data: ratesData, error: ratesError } = await supabase
       .from("won_rates")
       .select("*")
       .order("server", { ascending: true });
 
-    if (!error && data) {
-      setRates(data);
+    if (!ratesError && ratesData) {
+      setRates(ratesData);
     }
+
+    // Sayfa bilgilendirme notunu çek
+    const { data: noticeData } = await supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", "won_page_notice")
+      .maybeSingle();
+
+    if (noticeData) {
+      setPageNotice(noticeData.value);
+      setNoticeInput(noticeData.value);
+    }
+
     setLoading(false);
   }
 
+  // Notu güncelleme fonksiyonu (Admin)
+  async function handleUpdateNotice() {
+    const { error } = await supabase
+      .from("site_settings")
+      .upsert({ key: "won_page_notice", value: noticeInput });
+
+    if (error) {
+      alert("Not güncellenirken hata oluştu: " + error.message);
+    } else {
+      setPageNotice(noticeInput);
+      setIsEditingNotice(false);
+      setSuccessMsg("Sayfa bilgi notu başarıyla güncellendi!");
+      setTimeout(() => setSuccessMsg(''), 4000);
+    }
+  }
+
+  // Sunucu fiyat ve adını güncelleme fonksiyonu (Admin)
   async function handleUpdateRate(id: string) {
-    if (editBuy === '' || editSell === '') {
-      alert("Lütfen alış ve satış fiyatlarını boş bırakma!");
+    if (editBuy === '' || editSell === '' || !editServerName.trim()) {
+      alert("Sunucu adı, alış ve satış fiyatları boş bırakılamaz!");
       return;
     }
 
@@ -67,6 +104,7 @@ export default function WonPage() {
     const { error } = await supabase
       .from("won_rates")
       .update({
+        server: editServerName.trim(),
         buy_price: Number(editBuy),
         sell_price: Number(editSell),
         whatsapp: editWhatsapp,
@@ -77,9 +115,9 @@ export default function WonPage() {
     if (error) {
       alert("Güncellenirken hata oluştu: " + error.message);
     } else {
-      setSuccessMsg("Fiyatlar anlık olarak güncellendi!");
+      setSuccessMsg("Sunucu ve kur bilgisi başarıyla güncellendi!");
       setEditingId(null);
-      checkUserAndRates();
+      checkUserAndData();
       setTimeout(() => setSuccessMsg(''), 4000);
     }
   }
@@ -89,7 +127,7 @@ export default function WonPage() {
       <div className="mx-auto max-w-6xl">
         
         {/* ÜST BAŞLIK VE GERİ DÖN */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-8 border-b border-yellow-500/20 pb-5">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6 border-b border-yellow-500/20 pb-5">
           <div>
             <button
               onClick={() => (window.location.href = "/")}
@@ -112,6 +150,62 @@ export default function WonPage() {
           )}
         </div>
 
+        {/* 📢 ANLIK BİLGİ / NOT ALANI */}
+        <div className="bg-slate-900 border border-yellow-500/30 rounded-2xl p-5 mb-8 shadow-lg">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">💡</span>
+              <div>
+                <h4 className="text-xs font-bold text-yellow-400 uppercase tracking-wider">Önemli Bilgilendirme</h4>
+                <p className="text-slate-200 text-sm mt-0.5">
+                  {pageNotice || "Şu an için aktif bir bilgilendirme notu bulunmuyor."}
+                </p>
+              </div>
+            </div>
+
+            {/* Sadece Admin Görebilir: Notu Düzenle Butonu */}
+            {userEmail && isAdmin && !isEditingNotice && (
+              <button
+                onClick={() => setIsEditingNotice(true)}
+                className="bg-slate-800 hover:bg-slate-700 text-yellow-400 border border-yellow-500/30 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition"
+              >
+                ✏️ Notu Düzenle
+              </button>
+            )}
+          </div>
+
+          {/* Admin Not Düzenleme Kutusu Açıldığında */}
+          {userEmail && isAdmin && isEditingNotice && (
+            <div className="mt-4 pt-4 border-t border-slate-800 space-y-3">
+              <label className="text-xs font-bold text-slate-300 block">Sayfa Bilgi Yazısını Güncelle:</label>
+              <textarea
+                value={noticeInput}
+                onChange={(e) => setNoticeInput(e.target.value)}
+                rows={2}
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-yellow-400"
+              />
+              <div className="flex gap-2 justify-end">
+                <button
+                  onClick={handleUpdateNotice}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition"
+                >
+                  Kaydet
+                </button>
+                <button
+                  onClick={() => {
+                    setIsEditingNotice(false);
+                    setNoticeInput(pageNotice);
+                  }}
+                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-xs font-bold transition"
+                >
+                  İptal
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* SUNUCU KURLARI LİSTESİ */}
         {loading ? (
           <p className="text-slate-400 text-center py-12">Kurlar yükleniyor...</p>
         ) : (
@@ -194,24 +288,34 @@ export default function WonPage() {
                       </div>
                     )}
 
-                    {/* SADECE ADMIN GÖREBİLİR: DEĞİŞTİRME BUTONU VE FORMU */}
+                    {/* SADECE ADMIN GÖREBİLİR: SUNUCU ADI VE FİYAT GÜNCELLEME FORMU */}
                     {userEmail && isAdmin && (
                       <div className="mt-2 pt-3 border-t border-slate-800">
                         {!isEditing ? (
                           <button
                             onClick={() => {
                               setEditingId(rate.id);
+                              setEditServerName(rate.server);
                               setEditBuy(rate.buy_price);
                               setEditSell(rate.sell_price);
                               setEditWhatsapp(rate.whatsapp || "905076680724");
                             }}
                             className="w-full bg-slate-800 hover:bg-slate-700 text-yellow-400 border border-yellow-500/30 py-2 rounded-xl text-xs font-bold transition"
                           >
-                            ⚙️ Kuru / Fiyatı Güncelle
+                            ⚙️ Sunucu Adını / Kuru Güncelle
                           </button>
                         ) : (
                           <div className="bg-slate-950 p-3 rounded-xl border border-yellow-500/40 space-y-2">
-                            <p className="text-xs font-bold text-yellow-400 text-center mb-1">Kur Düzenleme Paneli</p>
+                            <p className="text-xs font-bold text-yellow-400 text-center mb-1">Sunucu & Kur Düzenleme</p>
+                            <div>
+                              <label className="text-[10px] text-slate-400 block">Sunucu İsmi</label>
+                              <input
+                                type="text"
+                                value={editServerName}
+                                onChange={(e) => setEditServerName(e.target.value)}
+                                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-sm text-white"
+                              />
+                            </div>
                             <div>
                               <label className="text-[10px] text-slate-400 block">Alış Fiyatı (TL)</label>
                               <input
