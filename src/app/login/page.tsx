@@ -34,6 +34,32 @@ export default function LoginPage() {
     }, 700);
   }
 
+  async function signInWithGoogle() {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin + "/",
+      },
+    });
+
+    if (error) {
+      setMessage("Google giriş hatasi: " + error.message);
+    }
+  }
+
+  async function signInWithFacebook() {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "facebook",
+      options: {
+        redirectTo: window.location.origin + "/",
+      },
+    });
+
+    if (error) {
+      setMessage("Facebook giriş hatasi: " + error.message);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-transparent text-white flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8">
@@ -42,6 +68,31 @@ export default function LoginPage() {
         </h1>
 
         <p className="text-slate-400 mb-6">Hesabına giriş yap</p>
+
+        {/* Sosyal Butonlar */}
+        <div className="grid grid-cols-2 gap-3 mb-5">
+          <button
+            type="button"
+            onClick={signInWithGoogle}
+            className="w-full bg-white hover:bg-slate-200 text-black py-3 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2"
+          >
+            <span>🌐</span> Google
+          </button>
+
+          <button
+            type="button"
+            onClick={signInWithFacebook}
+            className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2"
+          >
+            <span>📘</span> Facebook
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3 mb-5">
+          <div className="h-px bg-slate-700 flex-1" />
+          <span className="text-slate-500 text-sm">veya e-posta ile</span>
+          <div className="h-px bg-slate-700 flex-1" />
+        </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <input

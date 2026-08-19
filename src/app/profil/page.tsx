@@ -22,6 +22,8 @@ type Profile = {
   positive_reviews?: number;
   negative_reviews?: number;
   created_at?: string;
+  phone?: string;
+  is_approved?: boolean;
 };
 
 export default function ProfilPage() {
@@ -29,49 +31,105 @@ export default function ProfilPage() {
   const [userListings, setUserListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Telefon güncelleme state'leri
+  const [phoneInput, setPhoneInput] = useState("");
+  const [savingPhone, setSavingPhone] = useState(false);
+  const [phoneMsg, setPhoneMsg] = useState("");
+
   useEffect(() => {
-    async function loadUserData() {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const user = sessionData.session?.user;
-
-      if (!user) {
-        window.location.href = "/login";
-        return;
-      }
-
-      // Profil Bilgilerini Çek
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
-      setProfile({
-        id: user.id,
-        email: user.email,
-        is_verified: profileData?.is_verified || false,
-        total_sales: profileData?.total_sales || 0,
-        positive_reviews: profileData?.positive_reviews || 0,
-        negative_reviews: profileData?.negative_reviews || 0,
-        created_at: user.created_at,
-      });
-
-      // Kullanıcının İlanlarını Çek
-      const { data: listingsData } = await supabase
-        .from("listings")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (listingsData) {
-        setUserListings(listingsData);
-      }
-
-      setLoading(false);
-    }
-
     loadUserData();
   }, []);
+
+  async function loadUserData() {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const user = sessionData.session?.user;
+
+    if (!user) {
+      window.location.href = "/login";
+      return;
+    }
+
+    // Profil Bilgilerini Çek
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    setProfile({
+      id: user.id,
+      email: user.email,
+      is_verified: profileData?.is_verified || false,
+      total_sales: profileData?.total_sales || 0,
+      positive_reviews: profileData?.positive_reviews || 0,
+      negative_reviews: profileData?.negative_reviews || 0,
+      created_at: user.created_at,
+      phone: profileData?.phone || "",
+      is_approved: profileData?.is_approved || false,
+    });
+
+    if (profileData?.phone) {
+      setPhoneInput(profileData.phone);
+    }
+
+    // Kullanıcının İlanlarını Çek
+    const { data: listingsData } = await supabase
+      .from("listings")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (listingsData) {
+      setUserListings(listingsData);
+    }
+
+    setLoading(false);
+  }
+
+  // Telefon Kaydetme / Güncelleme ve Tekil Kontrolü
+  async function handleSavePhone(e: React.FormEvent) {
+    e.preventDefault();
+    if (!profile) return;
+
+    if (!phoneInput.trim()) {
+      alert("Lütfen geçerli bir telefon numarası girin!");
+      return;
+    }
+
+    setSavingPhone(true);
+    setPhoneMsg("");
+
+    // 1. Bu numara başka bir kullanıcıda kayıtlı mı kontrol et
+    const { data: existingUser } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("phone", phoneInput.trim())
+      .maybeSingle();
+
+    if (existingUser && existingUser.id !== profile.id) {
+      alert("Bu cep telefonu numarası başka bir hesapta zaten kayıtlı!");
+      setSavingPhone(false);
+      return;
+    }
+
+    // 2. Numarayı kaydet ve onay durumunu false yap (Yönetici tekrar onaylasın)
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        phone: phoneInput.trim(),
+        is_approved: false, 
+      })
+      .eq("id", profile.id);
+
+    setSavingPhone(false);
+
+    if (error) {
+      alert("Telefon kaydedilirken hata oluştu: " + error.message);
+    } else {
+      setPhoneMsg("Telefon numaranız kaydedildi. Yönetici onayından sonra ilan verebilirsiniz.");
+      setProfile((prev) => (prev ? { ...prev, phone: phoneInput.trim(), is_approved: false } : null));
+    }
+  }
 
   if (loading) {
     return (
@@ -115,6 +173,19 @@ export default function ProfilPage() {
                 <p className="text-xs text-slate-400 mt-1">
                   Kayıt Tarihi: {profile?.created_at ? new Date(profile.created_at).toLocaleDateString("tr-TR") : "Bilinmiyor"}
                 </p>
+                
+                {/* Onay Durumu Rozeti */}
+                <div className="mt-2">
+                  {profile?.is_approved ? (
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full font-bold">
+                      ✓ Hesap Onaylı (İlan Verebilir)
+                    </span>
+                  ) : (
+                    <span className="text-[10px] bg-rose-500/20 text-rose-400 border border-rose-500/30 px-2.5 py-1 rounded-full font-bold">
+                      ⏳ Yönetici Onayı Bekleniyor
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -138,6 +209,34 @@ export default function ProfilPage() {
           </div>
         </div>
 
+        {/* TELEFON BİLGİSİ VE GÜNCELLEME ALANI */}
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
+          <h3 className="text-lg font-bold text-yellow-400 mb-2">📱 İletişim / Cep Telefonu</h3>
+          <p className="text-xs text-slate-400 mb-4">
+            Al-sat yapabilmek ve ilan ekleyebilmek için telefon numaranızı kaydetmeniz zorunludur. Her numara sadece bir hesapta kullanılabilir.
+          </p>
+
+          <form onSubmit={handleSavePhone} className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="tel"
+              placeholder="0500 000 00 00"
+              value={phoneInput}
+              onChange={(e) => setPhoneInput(e.target.value)}
+              className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-yellow-400"
+              required
+            />
+            <button
+              type="submit"
+              disabled={savingPhone}
+              className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-6 py-2.5 rounded-xl text-sm transition"
+            >
+              {savingPhone ? "Kaydediliyor..." : "Telefonu Kaydet"}
+            </button>
+          </form>
+
+          {phoneMsg && <p className="text-xs text-emerald-400 mt-3 font-medium">{phoneMsg}</p>}
+        </div>
+
         {/* KULLANICININ İLANLARI */}
         <div>
           <h2 className="text-2xl font-bold text-yellow-400 mb-6">
@@ -147,12 +246,18 @@ export default function ProfilPage() {
           {userListings.length === 0 ? (
             <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center">
               <p className="text-slate-400 mb-4">Henüz aktif bir ilan vermedin.</p>
-              <a
-                href="/ilan-ver"
-                className="inline-block bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold transition-colors"
-              >
-                Hemen İlan Ver
-              </a>
+              {profile?.is_approved ? (
+                <a
+                  href="/ilan-ver"
+                  className="inline-block bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold transition-colors"
+                >
+                  Hemen İlan Ver
+                </a>
+              ) : (
+                <p className="text-xs text-rose-400 font-bold">
+                  İlan verebilmek için telefonunuzu kaydetmeniz ve yönetici onayı almanız gerekmektedir.
+                </p>
+              )}
             </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-4">
