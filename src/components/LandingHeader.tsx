@@ -46,81 +46,83 @@ export default function LandingHeader({
       <AnnouncementBar />
 
       <header className="sticky top-0 z-50 border-b border-yellow-500/20 bg-[#030812]/95 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1700px] items-center justify-between gap-3 px-4 py-3 md:px-8">
-          <button
-            type="button"
-            onClick={() => {
-              window.location.href = "/";
-            }}
-            className="shrink-0 whitespace-nowrap text-xl font-extrabold text-white md:text-3xl"
-          >
-            Metin2<span className="text-yellow-400">alsat.com</span>
-          </button>
-
-          <nav className="hidden items-center gap-1 lg:flex">
-            <a
-              href="/"
-              className="rounded-lg px-3 py-2 font-semibold text-yellow-400 hover:bg-white/5"
+        <div className="mx-auto flex max-w-[1700px] flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-8">
+          
+          {/* LOGO VE SOL MENÜ */}
+          <div className="flex items-center gap-4 flex-wrap">
+            <button
+              type="button"
+              onClick={() => {
+                window.location.href = "/";
+              }}
+              className="shrink-0 whitespace-nowrap text-xl font-extrabold text-white md:text-3xl"
             >
-              Ana Sayfa
-            </a>
+              Metin2<span className="text-yellow-400">alsat.com</span>
+            </button>
 
-            <a
-              href="/#ilanlar"
-              className="rounded-lg px-3 py-2 font-semibold text-slate-200 hover:bg-white/5 hover:text-yellow-400"
-            >
-              Ilanlar
-            </a>
-
-            <a
-              href="/won"
-              className="rounded-lg px-3 py-2 font-semibold text-slate-200 hover:bg-white/5 hover:text-yellow-400"
-            >
-              Won Al / Sat
-            </a>
-
-            {userEmail && (
+            <nav className="flex items-center gap-1 flex-wrap">
               <a
-                href="/ilanlarim"
-                className="rounded-lg px-3 py-2 font-semibold text-slate-200 hover:bg-white/5 hover:text-yellow-400"
+                href="/#ilanlar"
+                className="rounded-lg px-2.5 py-2 font-semibold text-slate-200 hover:bg-white/5 hover:text-yellow-400 text-sm md:text-base"
               >
-                Ilanlarim
+                İlanlar
               </a>
-            )}
-          </nav>
 
-          <div className="flex items-center gap-2">
-            {/* HER ZAMAN GÖRÜNÜR ADMİN YÖNETİM BUTONU */}
+              <a
+                href="/won"
+                className="rounded-lg px-2.5 py-2 font-semibold text-slate-200 hover:bg-white/5 hover:text-yellow-400 text-sm md:text-base"
+              >
+                Won Al / Sat
+              </a>
+
+              {userEmail && (
+                <a
+                  href="/ilanlarim"
+                  className="rounded-lg px-2.5 py-2 font-semibold text-slate-200 hover:bg-white/5 hover:text-yellow-400 text-sm md:text-base"
+                >
+                  İlanlarım
+                </a>
+              )}
+            </nav>
+          </div>
+
+          {/* SAĞ KULLANICI & MESAJLAR / PROFİL BLOKU (ÜSTTEN TİCARET NASIL YAPILIR KALDIRILDI) */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {userEmail && (
+              <>
+                <a
+                  href="/mesajlar"
+                  className="rounded-xl bg-yellow-400/20 border border-yellow-400/40 px-3.5 py-2 text-sm font-bold text-yellow-300 hover:bg-yellow-400/30 flex items-center gap-1.5 shadow-md"
+                >
+                  <span>💬</span> Mesajlar
+                </a>
+
+                <a
+                  href="/profil"
+                  className="rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3.5 py-2 text-sm font-bold text-white flex items-center gap-1.5"
+                >
+                  <span>👤</span> Profilim
+                </a>
+              </>
+            )}
+
             {userEmail && isAdmin && (
               <a
                 href="/admin"
                 className="rounded-xl border border-yellow-400/60 bg-yellow-400/20 px-3 py-2 text-sm font-black text-yellow-300 hover:bg-yellow-400/30"
               >
-                👑 Yönetim Paneli
+                👑 Yönetim
               </a>
             )}
 
-            <a
-              href="/#ticaret-kurallari"
-              className="hidden rounded-xl bg-yellow-400 px-4 py-2 text-sm font-black text-black hover:bg-yellow-500 md:inline-flex"
-            >
-              Ticaret Nasil Yapilir?
-            </a>
-
             {userEmail ? (
-              <>
-                <span className="hidden max-w-40 truncate text-sm text-slate-300 xl:block">
-                  {userEmail}
-                </span>
-
-                <button
-                  type="button"
-                  onClick={onLogout}
-                  className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm font-bold text-red-300 hover:bg-red-500 hover:text-white"
-                >
-                  Cikis Yap
-                </button>
-              </>
+              <button
+                type="button"
+                onClick={onLogout}
+                className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm font-bold text-red-300 hover:bg-red-500 hover:text-white"
+              >
+                Çıkış Yap
+              </button>
             ) : (
               <>
                 <button
@@ -130,7 +132,7 @@ export default function LandingHeader({
                   }}
                   className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm font-bold text-white hover:border-yellow-400"
                 >
-                  Giris
+                  Giriş
                 </button>
 
                 <button
@@ -140,7 +142,7 @@ export default function LandingHeader({
                   }}
                   className="hidden rounded-xl bg-slate-800 px-4 py-2 text-sm font-bold text-white hover:bg-slate-700 sm:block"
                 >
-                  Kayit Ol
+                  Kayıt Ol
                 </button>
               </>
             )}
@@ -150,11 +152,12 @@ export default function LandingHeader({
               onClick={() => {
                 window.location.href = "/ilan-ver";
               }}
-              className="hidden rounded-xl bg-emerald-500 px-5 py-2 text-sm font-bold text-white hover:bg-emerald-600 md:block"
+              className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-600 shadow-md"
             >
-              Ilan Ver
+              İlan Ver
             </button>
           </div>
+
         </div>
       </header>
 

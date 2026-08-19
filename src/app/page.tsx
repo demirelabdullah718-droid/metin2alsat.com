@@ -691,12 +691,28 @@ export default function Home() {
           )}
 
           {userEmail && (
-            <a
-              href="/ilanlarim"
-              className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl font-bold text-sm"
-            >
-              İlanlarım
-            </a>
+            <>
+              <a
+                href="/mesajlar"
+                className="bg-yellow-400/10 border border-yellow-400/30 text-yellow-300 hover:bg-yellow-400/20 px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-1.5"
+              >
+                <span>💬</span> Mesajlar
+              </a>
+
+              <a
+                href="/profil"
+                className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-1.5"
+              >
+                <span>👤</span> Profilim
+              </a>
+
+              <a
+                href="/ilanlarim"
+                className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl font-bold text-sm"
+              >
+                İlanlarım
+              </a>
+            </>
           )}
 
           <a
@@ -704,13 +720,6 @@ export default function Home() {
             className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold text-sm"
           >
             Resmi Won Al / Sat
-          </a>
-
-          <a
-            href="/ticaret-nasil-yapilir"
-            className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl font-bold text-sm"
-          >
-            Ticaret Nasıl Yapılır?
           </a>
 
           {userEmail ? (
